@@ -266,25 +266,25 @@ const live = computed(() => connected.value && !outbox.offline.value);
                     <span class="label-caps text-base">{{ column.label }}</span>
                     <span class="font-display text-2xl font-black">{{ column.orders.length }}</span>
                 </h2>
-                <ul class="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
+                <ul class="min-h-0 flex-1 space-y-3 overflow-y-auto p-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     <li
                         v-for="order in column.orders"
                         :key="order.id"
                         class="flex overflow-hidden rounded-card bg-raised transition-shadow"
                         :class="{ 'ring-8 ring-oro animate-pulse': flashing.has(order.id) }"
                     >
-                        <div class="min-w-0 flex-1 p-3">
+                        <div class="min-w-0 flex-1 py-3 pr-2 pl-3">
                             <div class="flex items-start justify-between gap-2">
                                 <span class="font-display text-6xl leading-none font-black">{{ order.number }}</span>
                                 <span v-if="order.cash_open" class="label-caps rounded-full bg-oro px-3 py-1 text-carbone">Bar offen</span>
                             </div>
                             <ul class="mt-2 text-lg leading-snug">
                                 <!-- text first; small pictures at the end, one per piece, as a second check of the quantity -->
-                                <li v-for="(item, i) in order.items" :key="i" class="flex flex-wrap items-center gap-x-1.5">
+                                <li v-for="(item, i) in order.items" :key="i" class="flex flex-wrap items-center gap-x-1">
                                     <span class="shrink-0 font-extrabold tabular-nums">{{ item.quantity }}&#8239;×</span>
                                     <span class="font-semibold whitespace-nowrap">
                                         {{ item.name }}
-                                        <span v-if="item.variant" class="font-normal text-grigio">{{ item.variant === 'slice' ? 'Stück' : 'ganz' }}</span>
+                                        <span v-if="item.variant" class="text-base font-normal text-grigio">{{ item.variant === 'slice' ? 'Stück' : 'ganz' }}</span>
                                     </span>
                                     <span v-if="item.oven && item.icon" class="flex shrink-0 items-center gap-px">
                                         <MenuIcon
@@ -306,7 +306,7 @@ const live = computed(() => connected.value && !outbox.offline.value);
                         </div>
                         <button
                             type="button"
-                            class="flex w-34 shrink-0 items-center justify-center px-2 text-center text-xl leading-tight font-extrabold uppercase"
+                            class="flex w-38 shrink-0 items-center justify-center px-2 text-center text-xl leading-tight font-extrabold uppercase"
                             :class="actionFor(order).tone"
                             @click="advance(order)"
                         >
