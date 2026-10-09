@@ -19,7 +19,7 @@ const rate = (r) => `${String(r).replace('.', ',')} %`;
         <table class="mt-3 w-full text-sm">
             <tbody>
                 <tr v-for="(line, i) in receipt.lines" :key="i">
-                    <td class="py-1">{{ line.quantity }}× {{ line.name }}</td>
+                    <td class="py-1">{{ line.quantity }}&#8239;× {{ line.name }}</td>
                     <td class="py-1 text-right text-grigio">{{ rate(line.vat_rate) }}</td>
                     <td class="py-1 text-right">{{ euro(line.total_cents) }}</td>
                 </tr>

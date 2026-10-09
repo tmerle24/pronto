@@ -278,9 +278,9 @@ const live = computed(() => connected.value && !outbox.offline.value);
                                 <span v-if="order.cash_open" class="label-caps rounded-full bg-oro px-3 py-1 text-carbone">Bar offen</span>
                             </div>
                             <ul class="mt-2 text-lg leading-snug">
-                                <!-- tabular digits: "1×" and "3×" are equally wide, so names line up -->
+                                <!-- "2 ×" with a narrow no-break space; tabular digits keep names aligned -->
                                 <li v-for="(item, i) in order.items" :key="i" class="flex gap-1.5">
-                                    <span class="shrink-0 font-extrabold tabular-nums">{{ item.quantity }}×</span>
+                                    <span class="shrink-0 font-extrabold tabular-nums">{{ item.quantity }}&#8239;×</span>
                                     <span class="font-semibold">
                                         {{ item.name }}
                                         <span v-if="item.variant" class="font-normal text-grigio">{{ item.variant === 'slice' ? 'Stück' : 'ganz' }}</span>

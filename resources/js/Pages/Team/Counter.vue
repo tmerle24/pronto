@@ -115,7 +115,7 @@ onMounted(() => {
                 <ul class="mt-2 min-h-0 flex-1 divide-y divide-crema-scuro overflow-y-auto">
                     <li v-for="line in lines" :key="line.id" class="flex items-center gap-2 py-2">
                         <span class="flex flex-1 gap-1.5 text-lg">
-                            <span class="shrink-0 font-extrabold tabular-nums">{{ line.quantity }}×</span>
+                            <span class="shrink-0 font-extrabold tabular-nums">{{ line.quantity }}&#8239;×</span>
                             <span class="font-semibold">{{ line.item.name }} <span class="font-normal text-grigio">{{ VARIANT[line.item.variant] ?? '' }}</span></span>
                         </span>
                         <button type="button" class="size-12 rounded-full bg-crema-scuro text-2xl font-bold" :aria-label="`${line.item.name} weniger`" @click="remove(line.id)">-</button>

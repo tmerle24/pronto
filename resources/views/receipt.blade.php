@@ -37,7 +37,7 @@
         <tr><th>Menge</th><th>Artikel</th><th class="r">MwSt.</th><th class="r">Betrag</th></tr>
         @foreach ($r['lines'] as $line)
             <tr>
-                <td>{{ $line['quantity'] }}×</td>
+                <td>{{ $line['quantity'] }}&#8239;×</td>
                 <td>{{ $line['name'] }}@if ($line['deposit_cents']) <span class="muted">(inkl. {{ number_format($line['deposit_cents'] / 100, 2, ',', '.') }} € Pfand)</span>@endif</td>
                 <td class="r">{{ rtrim(rtrim(number_format($line['vat_rate'], 2, ',', ''), '0'), ',') }} %</td>
                 <td class="r">{{ number_format($line['total_cents'] / 100, 2, ',', '.') }} €</td>
