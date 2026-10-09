@@ -113,15 +113,18 @@ function submit(method) {
                                     <span v-if="item.variant" class="font-sans text-base font-normal text-grigio">{{ variantLabel(item.variant) }}</span>
                                 </span>
                             </p>
-                            <p class="text-sm text-grigio">{{ item.description }}</p>
-                            <p class="mt-1 font-display text-lg font-bold">
-                                {{ euro(item.price_cents) }}
-                                <span v-if="item.deposit_cents" class="font-sans text-sm font-normal text-grigio">+ {{ euro(item.deposit_cents) }} {{ t('Pfand') }}</span>
-                            </p>
-                            <p v-if="soldOut.has(item.id)" class="label-caps mt-1 text-rosso">{{ t('Ausverkauft') }}</p>
-                            <p v-else-if="item.allergens || item.additives" class="mt-1 text-xs text-grigio">
-                                {{ t('Allergene und Zusatzstoffe') }}: {{ [item.allergens, item.additives].filter(Boolean).join(' · ') }}
-                            </p>
+                            <!-- aligned with the name: picture 36 px + gap 8 px -->
+                            <div :class="{ 'pl-11': item.icon }">
+                                <p class="text-sm text-grigio">{{ item.description }}</p>
+                                <p class="mt-1 font-display text-lg font-bold">
+                                    {{ euro(item.price_cents) }}
+                                    <span v-if="item.deposit_cents" class="font-sans text-sm font-normal text-grigio">+ {{ euro(item.deposit_cents) }} {{ t('Pfand') }}</span>
+                                </p>
+                                <p v-if="soldOut.has(item.id)" class="label-caps mt-1 text-rosso">{{ t('Ausverkauft') }}</p>
+                                <p v-else-if="item.allergens || item.additives" class="mt-1 text-xs text-grigio">
+                                    {{ t('Allergene und Zusatzstoffe') }}: {{ [item.allergens, item.additives].filter(Boolean).join(' · ') }}
+                                </p>
+                            </div>
                         </div>
                         <Stepper
                             :name="[item.name, variantLabel(item.variant)].filter(Boolean).join(' ')"
