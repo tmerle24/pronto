@@ -4,15 +4,11 @@ Stand 10.10.2026. Erster Markt: 5./6.12.2026, Probelauf ca. 21.11.2026.
 
 ## Entscheidungen
 
-- [ ] **Stück Pizza: kommt es in den Ofen?** Stand 10.10.: Stücke kommen aus ganzen Pizzas. Liegt ein fertiges Stück
-  bereit, geht es ohne Ofen raus; sonst muss eine ganze Pizza gebacken werden (ergibt 4 Stücke). Noch offen, wie das
-  am Stand konkret läuft. Zwei Lösungen:
-  1. **Timo entscheidet pro Bestellung:** reine Stück-Bestellungen haben in "Neu" groß "Fertig" (Stück liegt bereit)
-     und kleiner "In den Ofen" (muss gebacken werden). Einfach, aber zwei Knöpfe statt einem. Favorit für den ersten Markt.
-  2. **Stück-Vorrat zählen:** Timo tippt "+4 Margherita-Stücke", wenn er eine Pizza schneidet; Stück-Bestellungen
-     nehmen aus dem Vorrat und gehen direkt auf Pronto, bei leerem Vorrat in den Ofen. Genauere Wartezeit, aber
-     Timo muss den Vorrat pflegen.
-  Zurzeit: Stück = 0,25 Ofeneinheiten, jede Bestellung geht durch den Ofen (Admin, Karte, Feld "Ofeneinheiten").
+- [x] **Stück Pizza: kommt es in den Ofen?** Entschieden 10.10.: bleibt wie es ist. Jede Bestellung mit Stück geht durch
+  den Ofen (ein Knopf pro Schritt, notfalls zweimal tippen), Stück = 0,25 Ofeneinheiten.
+- [ ] **Theke: Stück oder Getränk direkt über den Tresen?** Stücke werden meist an der Theke gekauft. Theken-Bestellungen
+  landen heute trotzdem in der Queue und müssen dort weggetippt werden. Idee: an der Kasse "direkt mitgegeben", dann
+  gleich als abgeholt verbucht, ohne Queue. Im Probelauf beobachten, ob das nervt.
 - [ ] **Bestellungen ohne Ofen (nur Getränke, Stück = 0) überspringen "Neu" und "Im Ofen"?** Vorschlag: landen direkt in
   "Pronto", Gast wird sofort benachrichtigt. Theke: reine Getränke-Bestellung gar nicht erst in die Queue. Noch nicht gebaut.
 - [ ] **Klarna** in Stripe aus- oder anlassen?
