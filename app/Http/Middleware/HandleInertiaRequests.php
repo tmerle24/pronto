@@ -44,9 +44,25 @@ class HandleInertiaRequests extends Middleware
                 'legal' => config('brand.legal'),
             ],
             'locale' => fn () => app()->getLocale(),
+            // German strings are the keys; only other locales need a dictionary
+            'translations' => fn () => $this->translations(app()->getLocale()),
             'auth' => fn () => [
                 'user' => $request->user()?->only(['id', 'name', 'role']),
             ],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function translations(string $locale): array
+    {
+        $path = lang_path($locale.'.json');
+        if ($locale === 'de' || ! is_file($path)) {
+            return [];
+        }
+
+        /** @var array<string, string> */
+        return json_decode((string) file_get_contents($path), true) ?: [];
     }
 }

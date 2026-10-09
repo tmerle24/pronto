@@ -2,15 +2,17 @@
 
 namespace App\Http\Controllers\Guest;
 
+use App\Enums\MenuEdition;
 use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\MenuItem;
+use App\Services\Payments\OnlinePayments;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class MenuController extends Controller
 {
-    public function show(?Event $event = null): Response
+    public function show(OnlinePayments $online, ?Event $event = null): Response
     {
         $event ??= Event::current();
         $locale = app()->getLocale();
@@ -24,7 +26,7 @@ class MenuController extends Controller
                 'description' => $item->localizedDescription($locale),
                 'category' => $item->category->value,
                 'edition' => $item->edition?->value,
-                'variant' => $item->variant?->label(),
+                'variant' => $item->variant?->value,
                 'price_cents' => $item->price_cents,
                 'deposit_cents' => $item->deposit_cents,
                 'allergens' => $item->allergens,
@@ -33,7 +35,16 @@ class MenuController extends Controller
             ]);
 
         return Inertia::render('Guest/Menu', [
-            'event' => $event?->only(['name', 'slug']),
+            'event' => $event === null ? null : [
+                'name' => $event->name,
+                'slug' => $event->slug,
+                'editions' => $event->editions->map(fn (MenuEdition $e) => $e->value)->values(),
+                'open' => $event->isOpenForOrders(),
+                'paused_minutes' => $event->pauseMinutesLeft(),
+                'pause_message' => $event->pause_message,
+                'cash_allowed' => $event->cash_allowed,
+                'online_allowed' => $online->enabled(),
+            ],
             'items' => $items,
         ]);
     }
