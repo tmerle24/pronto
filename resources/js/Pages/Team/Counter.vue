@@ -91,7 +91,7 @@ onMounted(() => {
                             @click="add(item)"
                         >
                             <span class="flex w-full items-center gap-2">
-                                <MenuIcon :icon="item.icon" :variant="item.variant" class="size-12" />
+                                <MenuIcon :icon="item.icon" :variant="item.variant" class="size-8" />
                                 <span class="font-display text-xl leading-tight font-bold">
                                     {{ item.name }} <span class="font-sans text-base font-normal">{{ VARIANT[item.variant] ?? '' }}</span>
                                 </span>
