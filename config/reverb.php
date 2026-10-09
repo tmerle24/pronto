@@ -82,8 +82,9 @@ return [
                     'scheme' => env('REVERB_SCHEME', 'https'),
                     'useTLS' => env('REVERB_SCHEME', 'https') === 'https',
                 ],
-                'allowed_origins' => ['*'],
-                'ping_interval' => env('REVERB_APP_PING_INTERVAL', 60),
+                'allowed_origins' => explode(',', (string) env('REVERB_ALLOWED_ORIGINS', '*')),
+                // market wifi drops idle sockets quickly
+                'ping_interval' => env('REVERB_APP_PING_INTERVAL', 25),
                 'activity_timeout' => env('REVERB_APP_ACTIVITY_TIMEOUT', 30),
                 'max_connections' => env('REVERB_APP_MAX_CONNECTIONS'),
                 'max_message_size' => env('REVERB_APP_MAX_MESSAGE_SIZE', 10_000),

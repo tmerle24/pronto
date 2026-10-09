@@ -22,7 +22,8 @@ return [
         'notte' => '#1F1713',
     ],
     'legal' => [
-        'imprint_url' => env('BRAND_IMPRINT_URL', '/impressum'),
-        'privacy_url' => env('BRAND_PRIVACY_URL', '/datenschutz'),
+        // same operator as the website, so its imprint applies
+        'imprint_url' => env('BRAND_IMPRINT_URL', 'https://www.tiamo-pizza.de/impressum'),
+        'privacy_url' => '/datenschutz',
     ],
 ];

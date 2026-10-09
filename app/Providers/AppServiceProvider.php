@@ -91,7 +91,10 @@ class AppServiceProvider extends ServiceProvider
 
         Gate::define('admin', fn (User $user) => $user->isAdmin());
 
-        // market wifi: many guests may share one IP
-        RateLimiter::for('checkout', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));
+        // per device tight, per IP generous: mobile carriers put many phones behind one IP
+        RateLimiter::for('checkout', fn (Request $request) => [
+            Limit::perMinute(10)->by('session:'.$request->session()->getId()),
+            Limit::perMinute(120)->by('ip:'.$request->ip()),
+        ]);
     }
 }

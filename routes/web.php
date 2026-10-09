@@ -16,6 +16,8 @@ use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [MenuController::class, 'show'])->name('guest.menu');
+Route::inertia('/datenschutz', 'Guest/Privacy')->name('privacy');
+Route::redirect('/impressum', config('brand.legal.imprint_url'))->name('imprint');
 Route::get('/e/{event}', [MenuController::class, 'show'])->name('guest.event');
 Route::post('/e/{event}/orders', [CheckoutController::class, 'store'])
     ->middleware('throttle:checkout')
