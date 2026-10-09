@@ -244,6 +244,7 @@ const live = computed(() => connected.value && !outbox.offline.value);
                 <span class="size-3 rounded-full" :class="live ? 'bg-basilico' : 'bg-grigio'"></span>
                 {{ live ? 'Live' : 'Verbinde...' }}
             </span>
+            <a :href="route('team.manual')" target="_blank" class="grid h-12 place-items-center px-2 text-grigio underline">Hilfe</a>
             <button type="button" class="h-12 px-3 text-grigio underline" @click="router.post(route('team.logout'))">Abmelden</button>
         </header>
 

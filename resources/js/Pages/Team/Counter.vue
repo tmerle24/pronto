@@ -70,6 +70,7 @@ onMounted(() => {
             <Wordmark class="text-2xl" />
             <TeamNav current="team.counter" />
             <span class="truncate text-grigio">{{ event?.name }}</span>
+            <a :href="route('team.manual')" target="_blank" class="ml-auto grid h-12 place-items-center px-2 text-grigio underline">Hilfe</a>
         </header>
 
         <p v-if="!event" class="m-auto font-display text-3xl">Kein aktives Event.</p>

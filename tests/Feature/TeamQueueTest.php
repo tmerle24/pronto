@@ -130,4 +130,13 @@ class TeamQueueTest extends TestCase
         $this->post('/broadcasting/auth', ['channel_name' => 'private-team.'.$this->event->id, 'socket_id' => '1.1'])
             ->assertForbidden();
     }
+
+    public function test_team_manual_needs_login(): void
+    {
+        $this->get('/team/anleitung.pdf')->assertRedirect('/team/login');
+        $this->actingAs(User::factory()->create())
+            ->get('/team/anleitung.pdf')
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
 }

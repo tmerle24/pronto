@@ -47,6 +47,11 @@ Route::prefix('team')->name('team.')->group(function () {
         Route::post('/orders/{order:id}/advance', [QueueController::class, 'advance'])->name('orders.advance');
         Route::post('/orders/{order:id}/undo', [QueueController::class, 'undo'])->name('orders.undo');
 
+        Route::get('/anleitung.pdf', fn () => response()->file(base_path('docs/anleitung-team.pdf'), [
+            'Content-Type' => 'application/pdf',
+            'Content-Disposition' => 'inline; filename="tiamo-pronto-anleitung.pdf"',
+        ]))->name('manual');
+
         Route::get('/counter', [CounterController::class, 'show'])->name('counter');
         Route::post('/counter', [CounterController::class, 'store'])->name('counter.store');
 
