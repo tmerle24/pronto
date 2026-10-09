@@ -7,6 +7,7 @@ use App\Http\Controllers\Guest\CheckoutController;
 use App\Http\Controllers\Guest\MenuController;
 use App\Http\Controllers\Guest\NotificationController;
 use App\Http\Controllers\Guest\OrderController;
+use App\Http\Controllers\Team\AndroidAppController;
 use App\Http\Controllers\Team\CounterController;
 use App\Http\Controllers\Team\IntakeController;
 use App\Http\Controllers\Team\LoginController;
@@ -52,6 +53,10 @@ Route::prefix('team')->name('team.')->group(function () {
             'Content-Type' => 'application/pdf',
             'Content-Disposition' => 'inline; filename="tiamo-pronto-anleitung.pdf"',
         ]))->name('manual');
+
+        // counter app with Tap to Pay, outside Google Play
+        Route::get('/app', [AndroidAppController::class, 'show'])->name('app');
+        Route::get('/app/tiamo-pronto.apk', [AndroidAppController::class, 'download'])->middleware('throttle:30,60')->name('app.download');
 
         Route::get('/counter', [CounterController::class, 'show'])->name('counter');
         Route::post('/counter', [CounterController::class, 'store'])->name('counter.store');

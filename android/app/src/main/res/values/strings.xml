@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">TIAMO Pronto</string>
+    <string name="title_activity_main">TIAMO Pronto</string>
+    <string name="package_name">de.tiamopizza.pronto</string>
+    <string name="custom_url_scheme">de.tiamopizza.pronto</string>
+</resources>
