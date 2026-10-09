@@ -90,7 +90,7 @@ onMounted(() => {
             <section class="min-h-0 overflow-y-auto">
                 <div v-for="group in groups" :key="group.title" class="mb-4">
                     <h2 class="label-caps mb-2 text-grigio">{{ group.title }}</h2>
-                    <div v-for="(row, r) in group.rows" :key="r" class="mb-3 grid grid-cols-2 gap-3">
+                    <div v-for="(row, r) in group.rows" :key="r" class="mb-3 grid grid-cols-3 gap-3">
                         <button
                             v-for="item in row"
                             :key="item.id"
@@ -101,8 +101,11 @@ onMounted(() => {
                             @click="add(item)"
                         >
                             <!-- picture | text: gap equals the tile padding (12 px) -->
-                            <span class="flex w-full flex-1 items-start gap-3">
-                                <MenuIcon :icon="item.icon" :variant="item.variant" class="h-8" />
+                            <span class="flex w-full flex-1 items-center gap-3">
+                                <!-- fixed slot, vertically centred; names stay aligned across tiles -->
+                                <span class="flex size-10 shrink-0 items-center justify-center">
+                                    <MenuIcon :icon="item.icon" :variant="item.variant" class="h-10" />
+                                </span>
                                 <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
                                 <span class="-ml-0.5 flex min-h-full flex-1 flex-col justify-between gap-2 self-stretch">
                                     <span class="font-display text-xl leading-tight font-bold">
