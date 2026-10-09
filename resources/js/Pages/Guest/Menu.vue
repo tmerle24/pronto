@@ -107,7 +107,10 @@ function submit(method) {
                     >
                         <!-- picture | text: gap equals the card padding (16 px) -->
                         <div class="flex min-w-0 flex-1 items-center gap-4">
-                            <MenuIcon :icon="item.icon" :variant="item.variant" class="h-9" />
+                            <!-- same size as the + button; fixed slot keeps names aligned across cards -->
+                            <span class="flex size-12 shrink-0 items-center justify-center">
+                                <MenuIcon :icon="item.icon" :variant="item.variant" class="h-12" />
+                            </span>
                             <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
                             <div class="-ml-0.5 min-w-0 flex-1">
                                 <p class="font-display text-xl leading-tight font-bold">
