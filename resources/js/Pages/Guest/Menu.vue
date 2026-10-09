@@ -1,5 +1,6 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
+import MenuIcon from '@/Components/MenuIcon.vue';
 import Stepper from '@/Components/Stepper.vue';
 import { useCart } from '@/lib/cart';
 import { t, variantLabel } from '@/lib/i18n';
@@ -104,6 +105,7 @@ function submit(method) {
                         class="flex items-center gap-3 rounded-card bg-raised p-4"
                         :class="{ 'opacity-60': soldOut.has(item.id) }"
                     >
+                        <MenuIcon :icon="item.icon" :variant="item.variant" class="size-20" />
                         <div class="min-w-0 flex-1">
                             <p class="font-display text-xl font-bold leading-tight">
                                 {{ item.name }}

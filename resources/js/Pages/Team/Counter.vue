@@ -1,4 +1,5 @@
 <script setup>
+import MenuIcon from '@/Components/MenuIcon.vue';
 import TeamNav from '@/Components/TeamNav.vue';
 import Wordmark from '@/Components/Wordmark.vue';
 import { useEcho } from '@/lib/echo';
@@ -89,8 +90,11 @@ onMounted(() => {
                             :disabled="soldOut.has(item.id)"
                             @click="add(item)"
                         >
-                            <span class="font-display text-xl leading-tight font-bold">
-                                {{ item.name }} <span class="font-sans text-base font-normal">{{ VARIANT[item.variant] ?? '' }}</span>
+                            <span class="flex w-full items-center gap-2">
+                                <MenuIcon :icon="item.icon" :variant="item.variant" class="size-12" />
+                                <span class="font-display text-xl leading-tight font-bold">
+                                    {{ item.name }} <span class="font-sans text-base font-normal">{{ VARIANT[item.variant] ?? '' }}</span>
+                                </span>
                             </span>
                             <span class="font-semibold">{{ soldOut.has(item.id) ? 'Ausverkauft' : euro(item.price_cents + item.deposit_cents) }}</span>
                             <span

@@ -32,6 +32,9 @@ class MenuSeeder extends Seeder
             ['Wasser', 'Water', 'Flasche 0,33 l', 'Bottle 0.33 l', MenuCategory::Drink, null, null, 250, 25, 1900, null, null, '0.00'],
         ];
 
+        $icons = ['Margherita' => 'margherita', 'Salami' => 'salami', 'Flammkuchen Klassiker' => 'flammkuchen-klassiker',
+            'Flammkuchen Vegetarisch' => 'flammkuchen-vegetarisch', 'Cola' => 'cola', 'Wasser' => 'wasser'];
+
         foreach ($items as $sort => [$name, $nameEn, $desc, $descEn, $category, $edition, $variant, $price, $deposit, $vat, $allergens, $additives, $units]) {
             MenuItem::query()->firstOrCreate(
                 ['name' => $name, 'edition' => $edition, 'variant' => $variant],
@@ -47,6 +50,7 @@ class MenuSeeder extends Seeder
                     'additives' => $additives,
                     'oven_units' => $units,
                     'sort' => ($sort + 1) * 10,
+                    'icon' => $icons[$name] ?? null,
                 ],
             );
         }

@@ -31,6 +31,7 @@ class CounterController extends Controller
                 'id' => $item->id,
                 'name' => $item->name,
                 'variant' => $item->variant?->value,
+                'icon' => $item->icon,
                 'edition' => $item->edition?->value,
                 'category' => $item->category->value,
                 'price_cents' => $item->price_cents,
