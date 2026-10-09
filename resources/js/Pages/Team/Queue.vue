@@ -9,7 +9,7 @@ import { connected, useEcho } from '@/lib/echo';
 import { getJson, NetworkError } from '@/lib/http';
 import { euro } from '@/lib/money';
 import { useOutbox } from '@/lib/outbox';
-import { chime, unlockAudio } from '@/lib/sound';
+import { audioContext, chime, unlockAudio } from '@/lib/sound';
 import { keepAwake } from '@/lib/wakeLock';
 import { Head, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
@@ -35,7 +35,8 @@ const STATUS_WORD = { new: 'Im Ofen', in_progress: 'Fertig', ready: 'Abgeholt', 
 // server truth per order id; picked up cards stay a while so undo can bring them back
 const cards = reactive(new Map(props.orders.map((o) => [o.id, o])));
 const flashing = reactive(new Set());
-const started = ref(false);
+// start screen only while sound is still locked (fresh page load); switching tabs keeps it unlocked
+const started = ref(!!audioContext());
 const now = ref(Date.now());
 const clockOffset = new Date(props.server_time).getTime() - Date.now();
 const toast = ref(null);
@@ -191,6 +192,7 @@ async function start() {
 let ticker = null;
 let resyncTimer = null;
 onMounted(() => {
+    if (started.value) keepAwake();
     ticker = setInterval(() => {
         now.value = Date.now() + clockOffset;
         prune();
