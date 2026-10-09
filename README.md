@@ -105,12 +105,15 @@ Updates:
 ssh wisherful "cd /var/www/pronto && bash deploy.sh"
 ```
 
-Danach einmalig im Stripe-Dashboard:
+Stripe einrichten (Test- oder Live-Keys, erneut ausführbar):
 
-1. **Webhook** auf `https://pronto.tiamo-pizza.de/webhooks/stripe` mit den Ereignissen `payment_intent.succeeded` und
-   `payment_intent.payment_failed`. Signing Secret als `STRIPE_WEBHOOK_SECRET` in `.env`, dann `bash deploy.sh --no-npm`.
-2. **Zahlungsmethoden**: Karte, Apple Pay, Google Pay, PayPal aktivieren.
-3. **Apple Pay**: Domain `pronto.tiamo-pizza.de` unter "Payment method domains" eintragen (Stripe prüft sie selbst).
+```bash
+ssh -t wisherful "cd /var/www/pronto && python3 server/stripe-setup.py"
+```
+
+Das Skript fragt die Keys verdeckt ab und legt über die Stripe-API den Webhook an (Secret landet direkt in `.env`),
+registriert die Domain für Apple Pay und Google Pay, schaltet PayPal ein (falls für den Account verfügbar) und lädt die
+Konfiguration neu.
 
 ## Checkliste "Vor dem Markttag"
 
