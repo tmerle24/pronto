@@ -106,7 +106,7 @@ function submit(method) {
                         :class="{ 'opacity-60': soldOut.has(item.id) }"
                     >
                         <div class="min-w-0 flex-1">
-                            <p class="flex items-center gap-2 font-display text-xl font-bold leading-tight">
+                            <p class="flex items-start gap-2 font-display text-xl font-bold leading-tight">
                                 <MenuIcon :icon="item.icon" :variant="item.variant" class="size-9" />
                                 <span>
                                     {{ item.name }}
