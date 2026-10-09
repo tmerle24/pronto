@@ -105,16 +105,14 @@ function submit(method) {
                         class="flex items-center gap-3 rounded-card bg-raised p-4"
                         :class="{ 'opacity-60': soldOut.has(item.id) }"
                     >
-                        <div class="min-w-0 flex-1">
-                            <p class="flex items-start gap-4 font-display text-xl font-bold leading-tight">
-                                <MenuIcon :icon="item.icon" :variant="item.variant" class="size-9" />
-                                <span>
+                        <!-- picture | text: gap equals the card padding (16 px) -->
+                        <div class="flex min-w-0 flex-1 items-start gap-4">
+                            <MenuIcon :icon="item.icon" :variant="item.variant" class="h-9" />
+                            <div class="min-w-0 flex-1">
+                                <p class="font-display text-xl leading-tight font-bold">
                                     {{ item.name }}
                                     <span v-if="item.variant" class="font-sans text-base font-normal text-grigio">{{ variantLabel(item.variant) }}</span>
-                                </span>
-                            </p>
-                            <!-- aligned with the name: picture 36 px + gap 16 px (same as the card padding) -->
-                            <div :class="{ 'pl-13': item.icon }">
+                                </p>
                                 <p class="text-sm text-grigio">{{ item.description }}</p>
                                 <p class="mt-1 font-display text-lg font-bold">
                                     {{ euro(item.price_cents) }}

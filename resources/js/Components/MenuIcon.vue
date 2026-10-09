@@ -1,5 +1,7 @@
 <script setup>
-// Illustration per item; a slice shows one quarter in colour inside the faint whole pizza.
+// Illustration per item, cropped to its drawing: the box is exactly as wide as the
+// picture, so spacing around it is what the layout says. A slice shows one quarter
+// in colour inside the faint whole pizza.
 defineProps({
     icon: String,
     variant: String,
@@ -7,16 +9,14 @@ defineProps({
 </script>
 
 <template>
-    <div v-if="icon" class="relative shrink-0" aria-hidden="true">
-        <template v-if="variant === 'slice'">
-            <img :src="`/illustrations/${icon}.svg`" alt="" class="size-full object-contain opacity-25" />
-            <img
-                :src="`/illustrations/${icon}.svg`"
-                alt=""
-                class="absolute inset-0 size-full object-contain"
-                style="clip-path: polygon(50% 50%, 100% 0%, 100% 100%)"
-            />
-        </template>
-        <img v-else :src="`/illustrations/${icon}.svg`" alt="" class="size-full object-contain" />
-    </div>
+    <span v-if="icon" class="relative inline-block shrink-0" aria-hidden="true">
+        <img :src="`/illustrations/${icon}.svg`" alt="" class="block h-full w-auto" :class="{ 'opacity-25': variant === 'slice' }" />
+        <img
+            v-if="variant === 'slice'"
+            :src="`/illustrations/${icon}.svg`"
+            alt=""
+            class="absolute inset-0 h-full w-full"
+            style="clip-path: polygon(50% 50%, 100% 0%, 100% 100%)"
+        />
+    </span>
 </template>

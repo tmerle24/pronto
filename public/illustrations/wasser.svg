@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200"><title>wasser</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="61 9 78 182" width="78" height="182"><title>wasser</title>
   <ellipse cx="100" cy="184" rx="38" ry="6" fill="#2A1E19" opacity=".12"/>
   <rect x="88" y="10" width="24" height="16" rx="3" fill="#2F6B3B"/>
   <path d="M90 26 L110 26 L112 46 Q136 58 136 84 L136 168 Q136 182 122 182 L78 182 Q64 182 64 168 L64 84 Q64 58 88 46 Z" fill="#CFE6EE"/>
