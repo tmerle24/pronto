@@ -93,7 +93,8 @@ onMounted(() => {
                             <!-- picture | text: gap equals the tile padding (12 px) -->
                             <span class="flex w-full flex-1 items-start gap-3">
                                 <MenuIcon :icon="item.icon" :variant="item.variant" class="h-8" />
-                                <span class="flex min-h-full flex-1 flex-col justify-between gap-2 self-stretch">
+                                <!-- -1px: Playfair's built-in side bearing, so the visible gap matches -->
+                                <span class="-ml-px flex min-h-full flex-1 flex-col justify-between gap-2 self-stretch">
                                     <span class="font-display text-xl leading-tight font-bold">
                                         {{ item.name }} <span class="font-sans text-base font-normal">{{ VARIANT[item.variant] ?? '' }}</span>
                                     </span>
