@@ -33,6 +33,8 @@ final class TeamOrderView
                 'name' => $item->name,
                 'variant' => $item->variant?->value,
                 'icon' => $item->menuItem?->icon,
+                // only what goes into the oven gets pictures (no drinks)
+                'oven' => (float) $item->unit_oven_units > 0,
             ])->all(),
         ];
     }

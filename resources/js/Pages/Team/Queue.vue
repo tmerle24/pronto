@@ -279,16 +279,22 @@ const live = computed(() => connected.value && !outbox.offline.value);
                                 <span v-if="order.cash_open" class="label-caps rounded-full bg-oro px-3 py-1 text-carbone">Bar offen</span>
                             </div>
                             <ul class="mt-2 text-lg leading-snug">
-                                <!-- "2 ×" with a narrow no-break space; tabular digits keep names aligned -->
+                                <!-- text first; small pictures at the end, one per piece, as a second check of the quantity -->
                                 <li v-for="(item, i) in order.items" :key="i" class="flex items-center gap-1.5">
-                                    <!-- fixed slot: narrow cans and wide flammkuchen keep quantities aligned -->
-                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center">
-                                        <MenuIcon :icon="item.icon" :variant="item.variant" class="h-6" />
-                                    </span>
                                     <span class="shrink-0 font-extrabold tabular-nums">{{ item.quantity }}&#8239;×</span>
                                     <span class="font-semibold">
                                         {{ item.name }}
                                         <span v-if="item.variant" class="font-normal text-grigio">{{ item.variant === 'slice' ? 'Stück' : 'ganz' }}</span>
+                                    </span>
+                                    <span v-if="item.oven && item.icon" class="ml-1 flex shrink-0 items-center gap-0.5">
+                                        <MenuIcon
+                                            v-for="n in Math.min(item.quantity, 6)"
+                                            :key="n"
+                                            :icon="item.icon"
+                                            :variant="item.variant"
+                                            class="h-3"
+                                        />
+                                        <span v-if="item.quantity > 6" class="text-xs font-semibold text-grigio">+{{ item.quantity - 6 }}</span>
                                     </span>
                                 </li>
                             </ul>
