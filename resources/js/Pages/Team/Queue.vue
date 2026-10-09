@@ -7,6 +7,7 @@ import { registerServiceWorker } from '@/lib/push';
 import { ageLabel } from '@/lib/age';
 import { connected, useEcho } from '@/lib/echo';
 import { getJson, NetworkError } from '@/lib/http';
+import { euro } from '@/lib/money';
 import { useOutbox } from '@/lib/outbox';
 import { chime, unlockAudio } from '@/lib/sound';
 import { keepAwake } from '@/lib/wakeLock';
@@ -299,9 +300,10 @@ const live = computed(() => connected.value && !outbox.offline.value);
                                 </li>
                             </ul>
                             <p class="mt-2 text-sm text-grigio">
-                                {{ order.status === 'in_progress' ? 'im Ofen ' : '' }}{{ ageLabel(order.status === 'in_progress' ? order.started_at : order.queued_at, now) }}
-                                <span v-if="order.cash_open"> · Bar {{ (order.total_cents / 100).toFixed(2).replace('.', ',') }} €</span>
-                                <span v-if="order.status === 'ready' && order.customer_notified_at"> · Gast benachrichtigt</span>
+                                <!-- each part wraps as a whole, amount and € never split -->
+                                <span class="whitespace-nowrap">{{ order.status === 'in_progress' ? 'im Ofen ' : '' }}{{ ageLabel(order.status === 'in_progress' ? order.started_at : order.queued_at, now) }}</span>
+                                <span v-if="order.cash_open" class="whitespace-nowrap"> · Bar {{ euro(order.total_cents) }}</span>
+                                <span v-if="order.status === 'ready' && order.customer_notified_at" class="whitespace-nowrap"> · Gast benachrichtigt</span>
                             </p>
                         </div>
                         <button
