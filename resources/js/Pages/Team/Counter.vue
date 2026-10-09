@@ -112,22 +112,25 @@ onMounted(() => {
                             :key="item.id"
                             type="button"
                             class="relative flex min-h-20 items-center gap-3 rounded-card p-3 text-left"
-                            :class="soldOut.has(item.id) ? 'bg-crema-scuro text-grigio' : 'bg-raised'"
+                            :class="[
+                                soldOut.has(item.id) ? 'bg-crema-scuro text-grigio' : 'bg-raised',
+                                // in the cart: whole tile framed, readable from the corner of the eye
+                                quantities[item.id] ? 'ring-3 ring-basilico ring-inset' : '',
+                            ]"
                             :disabled="soldOut.has(item.id)"
                             @click="add(item)"
                         >
                             <!-- one row, centred: picture | name over variant | price; gaps equal the tile padding (12 px) -->
-                            <span class="relative flex size-10 shrink-0 items-center justify-center">
+                            <span class="flex size-10 shrink-0 items-center justify-center">
                                 <MenuIcon :icon="item.icon" :variant="item.variant" class="h-10" />
-                                <!-- count sits on the picture, so it never covers the price -->
-                                <span
-                                    v-if="quantities[item.id]"
-                                    class="absolute -top-2 -right-2 grid size-6 place-items-center rounded-full bg-basilico text-sm font-extrabold text-white tabular-nums ring-2 ring-raised"
-                                >{{ quantities[item.id] }}</span>
                             </span>
                             <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
                             <span class="-ml-0.5 min-w-0 flex-1 leading-tight">
-                                <span class="block font-display text-xl font-bold">{{ item.name }}</span>
+                                <span class="block font-display text-xl font-bold">
+                                    <!-- count as everywhere else in Pronto: "2 × Margherita" -->
+                                    <span v-if="quantities[item.id]" class="font-sans font-extrabold text-basilico tabular-nums">{{ quantities[item.id] }}&#8239;×</span>
+                                    {{ item.name }}
+                                </span>
                                 <span v-if="item.variant" class="block text-sm text-grigio">{{ VARIANT[item.variant] }}</span>
                             </span>
                             <span class="shrink-0 font-semibold tabular-nums">{{ soldOut.has(item.id) ? 'Ausverkauft' : euro(item.price_cents + item.deposit_cents) }}</span>
