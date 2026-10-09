@@ -196,7 +196,16 @@ onMounted(() => {
     now.value = Date.now() + clockOffset;
 
     const echo = useEcho(usePage().props.realtime);
-    echo?.private(`team.${props.event?.id}`).listen('.order.updated', (e) => receive(e.order));
+    // auth can fail while the server deploys: retry instead of staying silent
+    const subscribeTeam = () => {
+        echo?.private(`team.${props.event?.id}`)
+            .listen('.order.updated', (e) => receive(e.order))
+            .error(() => {
+                echo.leave(`team.${props.event?.id}`);
+                setTimeout(subscribeTeam, 5000);
+            });
+    };
+    subscribeTeam();
     echo?.channel(`wait.${props.event?.id}`).listen('.wait.updated', (e) => {
         wait.value = e.general;
         setStatus(e.status);
