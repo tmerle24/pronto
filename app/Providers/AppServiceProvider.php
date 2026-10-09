@@ -15,8 +15,11 @@ use App\Services\Notifications\PushSender;
 use App\Services\Notifications\SevenSmsProvider;
 use App\Services\Notifications\SmsProvider;
 use App\Services\Notifications\WhatsAppProvider;
+use App\Services\Payments\CardTerminal;
+use App\Services\Payments\FakeCardTerminal;
 use App\Services\Payments\FakeGateway;
 use App\Services\Payments\PaymentGateway;
+use App\Services\Payments\StripeCardTerminal;
 use App\Services\Payments\StripeGateway;
 use Carbon\CarbonImmutable;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -81,6 +84,14 @@ class AppServiceProvider extends ServiceProvider
             }
 
             return new StripeGateway($this->app->make(StripeClient::class), (string) config('services.stripe.webhook_secret'));
+        });
+
+        $this->app->singleton(CardTerminal::class, function (): CardTerminal {
+            if (blank(config('services.stripe.secret'))) {
+                return new FakeCardTerminal;
+            }
+
+            return new StripeCardTerminal($this->app->make(StripeClient::class));
         });
     }
 

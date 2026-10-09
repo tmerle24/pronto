@@ -15,13 +15,13 @@ class ExpireUnpaidOrders extends Command
 
     protected $signature = 'orders:expire-unpaid';
 
-    protected $description = 'Cancel online orders not paid within 30 minutes';
+    protected $description = 'Cancel online and Tap to Pay orders not paid within 30 minutes';
 
     public function handle(OrderPayments $payments): int
     {
         $count = 0;
         Order::query()
-            ->where('payment_method', PaymentMethod::Online)
+            ->whereIn('payment_method', [PaymentMethod::Online, PaymentMethod::TapToPay])
             ->where('payment_status', PaymentStatus::Pending)
             ->where('status', OrderStatus::New)
             ->whereNull('queued_at')

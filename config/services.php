@@ -39,6 +39,8 @@ return [
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
         'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+        // Tap to Pay: Terminal location (server/stripe-setup.py)
+        'terminal_location' => env('STRIPE_TERMINAL_LOCATION'),
     ],
 
 ];

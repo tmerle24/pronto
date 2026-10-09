@@ -11,6 +11,7 @@ use App\Http\Controllers\Team\CounterController;
 use App\Http\Controllers\Team\IntakeController;
 use App\Http\Controllers\Team\LoginController;
 use App\Http\Controllers\Team\QueueController;
+use App\Http\Controllers\Team\TapToPayController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
@@ -54,6 +55,13 @@ Route::prefix('team')->name('team.')->group(function () {
 
         Route::get('/counter', [CounterController::class, 'show'])->name('counter');
         Route::post('/counter', [CounterController::class, 'store'])->name('counter.store');
+
+        // Tap to Pay (native counter app)
+        Route::post('/terminal/connection-token', [TapToPayController::class, 'connectionToken'])->name('terminal.token');
+        Route::post('/counter/tap', [TapToPayController::class, 'store'])->name('counter.tap');
+        Route::post('/counter/tap/{order:id}/complete', [TapToPayController::class, 'complete'])->name('counter.tap.complete');
+        Route::post('/counter/tap/{order:id}/cash', [TapToPayController::class, 'cash'])->name('counter.tap.cash');
+        Route::post('/counter/tap/{order:id}/cancel', [TapToPayController::class, 'cancel'])->name('counter.tap.cancel');
 
         Route::post('/intake/pause', [IntakeController::class, 'pause'])->name('intake.pause');
         Route::post('/intake/accepting', [IntakeController::class, 'accepting'])->name('intake.accepting');

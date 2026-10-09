@@ -11,6 +11,7 @@ use App\Models\User;
 use App\Services\Orders\OrderLine;
 use App\Services\Orders\OrderRejected;
 use App\Services\Orders\PlaceOrder;
+use App\Services\Payments\TapToPay;
 use App\Support\EventStatusView;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -21,7 +22,7 @@ use Inertia\Response;
 /** "Cassa": team takes the order of a guest in the line. */
 class CounterController extends Controller
 {
-    public function show(): Response
+    public function show(TapToPay $tapToPay): Response
     {
         $event = Event::current();
 
@@ -39,6 +40,7 @@ class CounterController extends Controller
             ])->values(),
             'status' => $event ? EventStatusView::make($event) : null,
             'placed' => session('placed'),
+            'tapToPay' => $tapToPay->clientConfig(),
         ]);
     }
 
