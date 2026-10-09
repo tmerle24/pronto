@@ -37,11 +37,27 @@ function clear() {
     for (const id of Object.keys(quantities)) delete quantities[id];
 }
 
-const form = useForm({ lines: [], payment_method: 'cash' });
+// slices and drinks usually go straight over the counter; anything whole goes to the kitchen.
+// Pre-set from the cart, the team can switch it with one tap.
+const needsKitchen = computed(() => lines.value.some((l) => l.item.category !== 'drink' && l.item.variant !== 'slice'));
+const kitchenChoice = ref(null);
+const toKitchen = computed(() => kitchenChoice.value ?? needsKitchen.value);
+watch(() => lines.value.length, (n) => {
+    if (n === 0) kitchenChoice.value = null;
+});
+
+const form = useForm({ lines: [], payment_method: 'cash', handed_over: false });
 function submit(method) {
     form.lines = lines.value.map(({ id, quantity }) => ({ id, quantity }));
     form.payment_method = method;
-    form.post(route('team.counter.store'), { preserveScroll: true, onSuccess: clear });
+    form.handed_over = !toKitchen.value;
+    form.post(route('team.counter.store'), {
+        preserveScroll: true,
+        onSuccess: () => {
+            clear();
+            kitchenChoice.value = null;
+        },
+    });
 }
 
 // receipt overlay with change helper
@@ -138,6 +154,28 @@ onMounted(() => {
                 <p class="mt-2 flex justify-between font-display text-3xl font-black">
                     <span>Summe</span><span>{{ euro(total) }}</span>
                 </p>
+                <div class="mt-3 grid grid-cols-2 rounded-full bg-crema-scuro p-1" role="radiogroup" aria-label="Wohin geht die Bestellung?">
+                    <button
+                        type="button"
+                        role="radio"
+                        :aria-checked="!toKitchen"
+                        class="h-12 rounded-full font-bold"
+                        :class="!toKitchen ? 'bg-carbone text-crema' : 'text-carbone'"
+                        @click="kitchenChoice = false"
+                    >
+                        Direkt mitgeben
+                    </button>
+                    <button
+                        type="button"
+                        role="radio"
+                        :aria-checked="toKitchen"
+                        class="h-12 rounded-full font-bold"
+                        :class="toKitchen ? 'bg-rosso text-white' : 'text-carbone'"
+                        @click="kitchenChoice = true"
+                    >
+                        In die Küche
+                    </button>
+                </div>
                 <p v-if="form.errors.order" class="mt-2 rounded-card bg-rosso p-3 font-semibold text-white" role="alert">{{ form.errors.order }}</p>
                 <div class="mt-3 grid grid-cols-2 gap-3">
                     <button type="button" class="h-[76px] rounded-card bg-basilico text-xl font-extrabold text-white disabled:opacity-50" :disabled="!lines.length || form.processing" @click="submit('cash')">
@@ -152,8 +190,14 @@ onMounted(() => {
 
         <div v-if="receipt" class="fixed inset-0 z-30 flex items-center justify-center bg-carbone/60 p-4">
             <div class="w-full max-w-md rounded-card bg-crema p-6 text-center">
-                <p class="label-caps text-grigio">Abholnummer</p>
-                <p class="font-display text-9xl leading-none font-black text-rosso">{{ receipt.number }}</p>
+                <template v-if="receipt.handed_over">
+                    <p class="font-script text-5xl text-basilico">Grazie!</p>
+                    <p class="font-display text-3xl font-bold">Direkt mitgegeben</p>
+                </template>
+                <template v-else>
+                    <p class="label-caps text-grigio">Abholnummer</p>
+                    <p class="font-display text-9xl leading-none font-black text-rosso">{{ receipt.number }}</p>
+                </template>
                 <p class="mt-2 font-display text-3xl font-bold">{{ euro(receipt.total_cents) }}</p>
                 <p class="text-grigio">{{ receipt.payment_method === 'cash' ? 'Bar bezahlt' : 'Karte am Terminal' }}</p>
 

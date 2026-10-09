@@ -6,9 +6,9 @@ Stand 10.10.2026. Erster Markt: 5./6.12.2026, Probelauf ca. 21.11.2026.
 
 - [x] **Stück Pizza: kommt es in den Ofen?** Entschieden 10.10.: bleibt wie es ist. Jede Bestellung mit Stück geht durch
   den Ofen (ein Knopf pro Schritt, notfalls zweimal tippen), Stück = 0,25 Ofeneinheiten.
-- [ ] **Theke: Stück oder Getränk direkt über den Tresen?** Stücke werden meist an der Theke gekauft. Theken-Bestellungen
-  landen heute trotzdem in der Queue und müssen dort weggetippt werden. Idee: an der Kasse "direkt mitgegeben", dann
-  gleich als abgeholt verbucht, ohne Queue. Im Probelauf beobachten, ob das nervt.
+- [x] **Theke: Stück oder Getränk direkt über den Tresen?** Gebaut 10.10.: Kasse hat "Direkt mitgeben" / "In die Küche".
+  Nur Stücke und Getränke → automatisch "Direkt mitgeben" (sofort abgeholt, keine Nummer, nicht in Queue und Display,
+  zählt in Umsatz und Beleg). Mit ganzer Pizza → "In die Küche". Umschaltbar mit einem Tap.
 - [ ] **Bestellungen ohne Ofen (nur Getränke, Stück = 0) überspringen "Neu" und "Im Ofen"?** Vorschlag: landen direkt in
   "Pronto", Gast wird sofort benachrichtigt. Theke: reine Getränke-Bestellung gar nicht erst in die Queue. Noch nicht gebaut.
 - [ ] **Klarna** in Stripe aus- oder anlassen?

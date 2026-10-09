@@ -40,6 +40,8 @@ class PlaceOrder
         OrderSource $source = OrderSource::Qr,
         string $locale = 'de',
         ?User $user = null,
+        // counter only: handed over the counter right away, skips the queue
+        bool $handedOver = false,
     ): Order {
         $this->guard($event, $method, $source);
         $items = $this->resolveItems($event, $lines);
@@ -92,11 +94,18 @@ class PlaceOrder
         return match ($method) {
             PaymentMethod::Online => $this->startOnlinePayment($order),
             // at the counter cash is paid on the spot, from the QR page at pickup
-            PaymentMethod::Cash => $this->queue->release(
+            PaymentMethod::Cash => $this->finish(
                 $source === OrderSource::Counter ? $this->orderPayments->markPaid($order, $user, 'counter_cash') : $order,
+                $handedOver && $source === OrderSource::Counter,
+                $user,
             ),
-            PaymentMethod::CounterCard => $this->queue->release($this->orderPayments->markPaid($order, $user, 'counter_card')),
+            PaymentMethod::CounterCard => $this->finish($this->orderPayments->markPaid($order, $user, 'counter_card'), $handedOver, $user),
         };
+    }
+
+    private function finish(Order $order, bool $handedOver, ?User $user): Order
+    {
+        return $handedOver ? $this->queue->handOver($order, $user) : $this->queue->release($order);
     }
 
     private function guard(Event $event, PaymentMethod $method, OrderSource $source): void
