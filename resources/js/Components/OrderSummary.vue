@@ -8,7 +8,10 @@ defineProps({ order: Object });
 <template>
     <ul class="divide-y divide-crema-scuro rounded-card bg-raised px-4">
         <li v-for="(item, i) in order.items" :key="i" class="flex justify-between gap-3 py-3">
-            <span>{{ item.quantity }}× {{ item.name }} {{ variantLabel(item.variant) }}</span>
+            <span class="flex gap-1.5">
+                <span class="w-7 shrink-0 text-right tabular-nums">{{ item.quantity }}×</span>
+                <span>{{ item.name }} {{ variantLabel(item.variant) }}</span>
+            </span>
             <span class="font-semibold">{{ euro(item.line_total_cents) }}</span>
         </li>
         <li class="flex justify-between py-3 font-bold">

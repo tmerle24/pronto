@@ -93,8 +93,8 @@ onMounted(() => {
                             <!-- picture | text: gap equals the tile padding (12 px) -->
                             <span class="flex w-full flex-1 items-start gap-3">
                                 <MenuIcon :icon="item.icon" :variant="item.variant" class="h-8" />
-                                <!-- -1px: Playfair's built-in side bearing, so the visible gap matches -->
-                                <span class="-ml-px flex min-h-full flex-1 flex-col justify-between gap-2 self-stretch">
+                                <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
+                                <span class="-ml-0.5 flex min-h-full flex-1 flex-col justify-between gap-2 self-stretch">
                                     <span class="font-display text-xl leading-tight font-bold">
                                         {{ item.name }} <span class="font-sans text-base font-normal">{{ VARIANT[item.variant] ?? '' }}</span>
                                     </span>
@@ -114,7 +114,10 @@ onMounted(() => {
                 <h2 class="label-caps text-grigio">Bestellung</h2>
                 <ul class="mt-2 min-h-0 flex-1 divide-y divide-crema-scuro overflow-y-auto">
                     <li v-for="line in lines" :key="line.id" class="flex items-center gap-2 py-2">
-                        <span class="flex-1 text-lg">{{ line.quantity }}× {{ line.item.name }} {{ VARIANT[line.item.variant] ?? '' }}</span>
+                        <span class="flex flex-1 gap-1.5 text-lg">
+                            <span class="w-8 shrink-0 text-right font-extrabold tabular-nums">{{ line.quantity }}×</span>
+                            <span class="font-semibold">{{ line.item.name }} <span class="font-normal text-grigio">{{ VARIANT[line.item.variant] ?? '' }}</span></span>
+                        </span>
                         <button type="button" class="size-12 rounded-full bg-crema-scuro text-2xl font-bold" :aria-label="`${line.item.name} weniger`" @click="remove(line.id)">-</button>
                     </li>
                     <li v-if="!lines.length" class="py-6 text-center text-grigio">Tippe links auf die Artikel.</li>
