@@ -1,6 +1,7 @@
 // Load test: guests order in parallel, status pages listen via Reverb, the
 // kitchen moves every order through the queue. Measures HTTP latency and
-// websocket delivery. Local only (demo login, fake payment = cash).
+// websocket delivery. Cash orders only, nothing is paid. Against production
+// only with a separate test event and LOADTEST_EMAIL/LOADTEST_PASSWORD.
 //
 //   node scripts/loadtest.mjs [baseUrl] [orders] [listeners]
 //   node scripts/loadtest.mjs http://localhost:8047 60 50
@@ -69,7 +70,7 @@ console.log(`Event ${event.name}, ${orderable.length} items, realtime ${realtime
 // kitchen login first, to ignore orders that were already in the queue
 const cook = new Client();
 await cook.request('/team/login', { json: false });
-const login = await cook.request('/team/login', { method: 'POST', body: { email: 'cucina@pronto.test', password: 'pronto-demo' } });
+const login = await cook.request('/team/login', { method: 'POST', body: { email: process.env.LOADTEST_EMAIL ?? 'cucina@pronto.test', password: process.env.LOADTEST_PASSWORD ?? 'pronto-demo' } });
 if (![200, 302, 204].includes(login.response.status)) throw new Error('team login failed');
 const before = new Set((await (await cook.request('/team/queue/state')).response.json()).orders.map((o) => o.id));
 
