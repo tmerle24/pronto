@@ -52,9 +52,19 @@ watch(() => props.placed, (value) => {
     given.value = null;
 });
 
+// food: one row per product, its variants side by side (ganz | Stück), so the same pizza is always in the same place
+function byProduct(items) {
+    const rows = new Map();
+    for (const item of items) {
+        if (!rows.has(item.name)) rows.set(item.name, []);
+        rows.get(item.name).push(item);
+    }
+    return [...rows.values()];
+}
+
 const groups = computed(() => [
-    { title: 'Essen', items: props.items.filter((i) => i.category !== 'drink') },
-    { title: 'Getränke', items: props.items.filter((i) => i.category === 'drink') },
+    { title: 'Essen', rows: byProduct(props.items.filter((i) => i.category !== 'drink')) },
+    { title: 'Getränke', rows: [props.items.filter((i) => i.category === 'drink')] },
 ]);
 
 onMounted(() => {
@@ -80,9 +90,9 @@ onMounted(() => {
             <section class="min-h-0 overflow-y-auto">
                 <div v-for="group in groups" :key="group.title" class="mb-4">
                     <h2 class="label-caps mb-2 text-grigio">{{ group.title }}</h2>
-                    <div class="grid grid-cols-2 gap-3 lg:grid-cols-3">
+                    <div v-for="(row, r) in group.rows" :key="r" class="mb-3 grid grid-cols-2 gap-3">
                         <button
-                            v-for="item in group.items"
+                            v-for="item in row"
                             :key="item.id"
                             type="button"
                             class="relative flex min-h-24 flex-col items-start justify-between rounded-card p-3 text-left"

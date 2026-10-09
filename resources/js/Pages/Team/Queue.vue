@@ -280,13 +280,13 @@ const live = computed(() => connected.value && !outbox.offline.value);
                             </div>
                             <ul class="mt-2 text-lg leading-snug">
                                 <!-- text first; small pictures at the end, one per piece, as a second check of the quantity -->
-                                <li v-for="(item, i) in order.items" :key="i" class="flex items-center gap-1.5">
+                                <li v-for="(item, i) in order.items" :key="i" class="flex flex-wrap items-center gap-x-1.5">
                                     <span class="shrink-0 font-extrabold tabular-nums">{{ item.quantity }}&#8239;×</span>
-                                    <span class="font-semibold">
+                                    <span class="font-semibold whitespace-nowrap">
                                         {{ item.name }}
                                         <span v-if="item.variant" class="font-normal text-grigio">{{ item.variant === 'slice' ? 'Stück' : 'ganz' }}</span>
                                     </span>
-                                    <span v-if="item.oven && item.icon" class="ml-1 flex shrink-0 items-center gap-0.5">
+                                    <span v-if="item.oven && item.icon" class="flex shrink-0 items-center gap-px">
                                         <MenuIcon
                                             v-for="n in Math.min(item.quantity, 6)"
                                             :key="n"
@@ -306,7 +306,7 @@ const live = computed(() => connected.value && !outbox.offline.value);
                         </div>
                         <button
                             type="button"
-                            class="flex w-32 shrink-0 items-center justify-center px-2 text-center text-xl leading-tight font-extrabold uppercase"
+                            class="flex w-34 shrink-0 items-center justify-center px-2 text-center text-xl leading-tight font-extrabold uppercase"
                             :class="actionFor(order).tone"
                             @click="advance(order)"
                         >

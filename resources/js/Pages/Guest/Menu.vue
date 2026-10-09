@@ -106,7 +106,7 @@ function submit(method) {
                         :class="{ 'opacity-60': soldOut.has(item.id) }"
                     >
                         <!-- picture | text: gap equals the card padding (16 px) -->
-                        <div class="flex min-w-0 flex-1 items-start gap-4">
+                        <div class="flex min-w-0 flex-1 items-center gap-4">
                             <MenuIcon :icon="item.icon" :variant="item.variant" class="h-9" />
                             <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
                             <div class="-ml-0.5 min-w-0 flex-1">
