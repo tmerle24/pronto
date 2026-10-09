@@ -102,7 +102,7 @@ onMounted(() => {
 
         <p v-if="!event" class="m-auto font-display text-3xl">Kein aktives Event.</p>
 
-        <main v-else class="grid min-h-0 flex-1 gap-3 px-3 pb-3 md:grid-cols-[1fr_380px]">
+        <main v-else class="grid min-h-0 flex-1 gap-3 px-3 pb-3 md:grid-cols-[1fr_320px]">
             <section class="min-h-0 overflow-y-auto">
                 <div v-for="group in groups" :key="group.title" class="mb-4">
                     <h2 class="label-caps mb-2 text-grigio">{{ group.title }}</h2>
@@ -124,13 +124,14 @@ onMounted(() => {
                             <span class="flex size-10 shrink-0 items-center justify-center">
                                 <MenuIcon :icon="item.icon" :variant="item.variant" class="h-10" />
                             </span>
+                            <!-- count as a pill "2 ×" in its own column, so name and variant stay aligned; fine here, the tile has no other buttons -->
+                            <span
+                                v-if="quantities[item.id]"
+                                class="shrink-0 rounded-full bg-basilico px-2 text-base leading-6 font-extrabold text-white tabular-nums"
+                            >{{ quantities[item.id] }}&#8239;×</span>
                             <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
-                            <span class="-ml-0.5 min-w-0 flex-1 leading-tight">
-                                <span class="block font-display text-xl font-bold">
-                                    <!-- count as everywhere else in Pronto: "2 × Margherita" -->
-                                    <span v-if="quantities[item.id]" class="font-sans font-extrabold text-basilico tabular-nums">{{ quantities[item.id] }}&#8239;×</span>
-                                    {{ item.name }}
-                                </span>
+                            <span class="min-w-0 flex-1 leading-tight" :class="{ '-ml-0.5': !quantities[item.id] }">
+                                <span class="block font-display text-xl font-bold whitespace-nowrap">{{ item.name }}</span>
                                 <span v-if="item.variant" class="block text-sm text-grigio">{{ VARIANT[item.variant] }}</span>
                             </span>
                             <span class="shrink-0 font-semibold tabular-nums">{{ soldOut.has(item.id) ? 'Ausverkauft' : euro(item.price_cents + item.deposit_cents) }}</span>
