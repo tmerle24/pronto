@@ -90,13 +90,14 @@ onMounted(() => {
                             :disabled="soldOut.has(item.id)"
                             @click="add(item)"
                         >
-                            <span class="flex w-full items-center gap-2">
+                            <!-- picture: same gap to the name as the tile padding (12 px) -->
+                            <span class="flex w-full items-start gap-3">
                                 <MenuIcon :icon="item.icon" :variant="item.variant" class="size-8" />
                                 <span class="font-display text-xl leading-tight font-bold">
                                     {{ item.name }} <span class="font-sans text-base font-normal">{{ VARIANT[item.variant] ?? '' }}</span>
                                 </span>
                             </span>
-                            <span class="font-semibold">{{ soldOut.has(item.id) ? 'Ausverkauft' : euro(item.price_cents + item.deposit_cents) }}</span>
+                            <span class="font-semibold" :class="{ 'pl-11': item.icon }">{{ soldOut.has(item.id) ? 'Ausverkauft' : euro(item.price_cents + item.deposit_cents) }}</span>
                             <span
                                 v-if="quantities[item.id]"
                                 class="absolute top-2 right-2 grid size-9 place-items-center rounded-full bg-rosso font-display text-lg font-black text-white"

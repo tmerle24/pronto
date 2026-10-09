@@ -1,5 +1,5 @@
 <script setup>
-// Illustration per item; a slice shows a wedge pulled out of the faint whole pizza.
+// Illustration per item; a slice shows one quarter in colour inside the faint whole pizza.
 defineProps({
     icon: String,
     variant: String,
@@ -13,7 +13,7 @@ defineProps({
             <img
                 :src="`/illustrations/${icon}.svg`"
                 alt=""
-                class="absolute inset-0 size-full translate-x-[12%] object-contain"
+                class="absolute inset-0 size-full object-contain"
                 style="clip-path: polygon(50% 50%, 100% 0%, 100% 100%)"
             />
         </template>
