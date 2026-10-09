@@ -5,10 +5,12 @@ namespace App\Services\Orders;
 use App\Enums\OrderEventType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Events\OrderPaymentChanged;
 use App\Events\OrderStatusChanged;
 use App\Models\Order;
 use App\Models\OrderEvent;
 use App\Models\User;
+use App\Support\Counter;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 
@@ -100,6 +102,9 @@ class OrderWorkflow
         }
 
         OrderStatusChanged::dispatch($locked, $from, $locked->status, $event->is_undo);
+        if (array_key_exists('payment_from', $event->meta ?? [])) {
+            OrderPaymentChanged::dispatch($locked);
+        }
 
         return new TransitionResult($locked, $event);
     }
@@ -121,6 +126,7 @@ class OrderWorkflow
             $meta = ['payment_from' => $order->payment_status->value];
             $order->payment_status = PaymentStatus::Paid;
             $order->paid_at = now();
+            $order->receipt_number ??= sprintf('%d-%06d', now()->year, Counter::next('receipt-'.now()->year));
         }
         $order->save();
 

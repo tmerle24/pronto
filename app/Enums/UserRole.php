@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum UserRole: string
+enum UserRole: string implements Labelled
 {
     case Staff = 'staff';
     case Admin = 'admin';

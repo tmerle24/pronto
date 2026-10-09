@@ -34,6 +34,25 @@ return [
         'daily_limit' => (int) env('WHATSAPP_DAILY_LIMIT', 300),
     ],
 
+    // technical security device, off until the tax advisor says otherwise
+    'fiscal' => [
+        'driver' => env('FISCAL_DRIVER', 'null'), // null | fiskaly
+        'fiskaly' => [
+            'api_key' => env('FISKALY_API_KEY'),
+            'api_secret' => env('FISKALY_API_SECRET'),
+            'tss_id' => env('FISKALY_TSS_ID'),
+            'client_id' => env('FISKALY_CLIENT_ID'),
+        ],
+    ],
+
+    // printed on receipts
+    'business' => [
+        'name' => env('BUSINESS_NAME', 'TIAMO Pizza'),
+        'address' => env('BUSINESS_ADDRESS', 'Adresse folgt'),
+        'tax_number' => env('BUSINESS_TAX_NUMBER'),
+        'vat_id' => env('BUSINESS_VAT_ID'),
+    ],
+
     'sms' => [
         'driver' => env('SMS_DRIVER', 'log'), // log | seven
         'api_key' => env('SMS_API_KEY'),

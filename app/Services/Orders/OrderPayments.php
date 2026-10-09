@@ -9,6 +9,7 @@ use App\Events\OrderPaymentChanged;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Payments\PaymentGateway;
+use App\Support\Counter;
 use Illuminate\Support\Facades\DB;
 
 class OrderPayments
@@ -49,6 +50,7 @@ class OrderPayments
             $from = $locked->payment_status;
             $locked->payment_status = PaymentStatus::Paid;
             $locked->paid_at = now();
+            $locked->receipt_number ??= sprintf('%d-%06d', now()->year, Counter::next('receipt-'.now()->year));
             $locked->save();
 
             $locked->events()->create([

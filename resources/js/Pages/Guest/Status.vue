@@ -1,6 +1,7 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
 import OrderSummary from '@/Components/OrderSummary.vue';
+import Receipt from '@/Components/Receipt.vue';
 import { connected, useEcho } from '@/lib/echo';
 import { postJson } from '@/lib/http';
 import { t } from '@/lib/i18n';
@@ -18,12 +19,14 @@ const props = defineProps({
     event: Object,
     wait: Object,
     vapid_public_key: String,
+    receipt: Object,
 });
 
 // live copy, replaced by websocket pushes and polling
 const live = ref(props.order);
 const order = computed(() => live.value);
 const wait = ref(props.wait);
+const receipt = ref(props.receipt);
 
 const finished = computed(() => ['picked_up', 'cancelled'].includes(order.value.status));
 const awaitingPayment = computed(() => !order.value.queued && order.value.status !== 'cancelled');
@@ -64,6 +67,11 @@ watch(
         if (status === 'ready' && before !== 'ready') pronto();
         if (status !== 'ready') closePronto();
     },
+);
+// receipt appears once paid (cash at pickup, late webhook)
+watch(
+    () => [order.value.payment_status, order.value.status],
+    () => router.reload({ only: ['receipt'], onSuccess: (page) => (receipt.value = page.props.receipt) }),
 );
 
 // channels
@@ -240,6 +248,7 @@ onUnmounted(() => {
 
         <h2 class="label-caps mt-8 text-grigio">{{ t('Deine Bestellung') }}</h2>
         <OrderSummary :order="order" class="mt-2" />
+        <Receipt v-if="receipt" :receipt="receipt" :token="order.token" class="mt-3" />
 
         <div
             v-if="showPronto"

@@ -5,7 +5,7 @@ namespace App\Enums;
 /**
  * Kitchen workflow. Payment is tracked separately (PaymentStatus).
  */
-enum OrderStatus: string
+enum OrderStatus: string implements Labelled
 {
     case New = 'new';
     case InProgress = 'in_progress';

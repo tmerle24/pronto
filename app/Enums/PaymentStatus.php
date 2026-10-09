@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum PaymentStatus: string
+enum PaymentStatus: string implements Labelled
 {
     case Pending = 'pending';
     case Paid = 'paid';

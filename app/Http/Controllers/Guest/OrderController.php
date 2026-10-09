@@ -11,7 +11,10 @@ use App\Services\Payments\OnlinePayments;
 use App\Services\Payments\PaymentGateway;
 use App\Services\WaitTime\EventWaitTimes;
 use App\Support\GuestOrderView;
+use App\Support\ReceiptView;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Response as HttpResponse;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -26,7 +29,18 @@ class OrderController extends Controller
             'event' => $order->event->only(['id', 'name', 'slug']),
             'wait' => (new EventWaitTimes($order->event))->forOrder($order),
             'vapid_public_key' => config('pronto.webpush.public_key'),
+            'receipt' => ReceiptView::available($order) ? ReceiptView::make($order) : null,
         ]);
+    }
+
+    public function receipt(Order $order): HttpResponse
+    {
+        abort_unless(ReceiptView::available($order), 404);
+        $order->load('items');
+
+        return Pdf::loadView('receipt', ['r' => ReceiptView::make($order)])
+            ->setPaper([0, 0, 226.77, 600]) // 80 mm wide, like a till roll
+            ->download("tiamo-beleg-{$order->receipt_number}.pdf");
     }
 
     public function pay(Order $order, PaymentGateway $gateway, OnlinePayments $online): Response|RedirectResponse

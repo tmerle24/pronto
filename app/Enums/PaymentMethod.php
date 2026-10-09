@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum PaymentMethod: string
+enum PaymentMethod: string implements Labelled
 {
     case Online = 'online';
     case Cash = 'cash';

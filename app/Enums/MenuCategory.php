@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum MenuCategory: string
+enum MenuCategory: string implements Labelled
 {
     case Pizza = 'pizza';
     case Flammkuchen = 'flammkuchen';

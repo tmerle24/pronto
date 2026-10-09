@@ -47,6 +47,13 @@ class Event extends Model
         static::creating(function (Event $event): void {
             $event->display_token ??= Str::random(40);
         });
+
+        // only one event at a time takes orders
+        static::saved(function (Event $event): void {
+            if ($event->is_active) {
+                static::query()->whereKeyNot($event->id)->where('is_active', true)->update(['is_active' => false]);
+            }
+        });
     }
 
     /**

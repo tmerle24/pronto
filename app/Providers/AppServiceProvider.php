@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Models\User;
+use App\Services\Fiscal\FiscalRecorder;
+use App\Services\Fiscal\FiskalyFiscalRecorder;
+use App\Services\Fiscal\NullFiscalRecorder;
 use App\Services\Notifications\CloudApiWhatsAppProvider;
 use App\Services\Notifications\LogPushSender;
 use App\Services\Notifications\LogSmsProvider;
@@ -19,6 +23,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\ServiceProvider;
 use Minishlink\WebPush\WebPush;
@@ -61,6 +66,15 @@ class AppServiceProvider extends ServiceProvider
             return new SevenSmsProvider((string) config('pronto.sms.api_key'), (string) config('pronto.sms.sender'));
         });
 
+        $this->app->singleton(FiscalRecorder::class, function (): FiscalRecorder {
+            $c = (array) config('pronto.fiscal.fiskaly');
+            if (config('pronto.fiscal.driver') !== 'fiskaly' || blank($c['api_key'] ?? null)) {
+                return new NullFiscalRecorder;
+            }
+
+            return new FiskalyFiscalRecorder((string) $c['api_key'], (string) $c['api_secret'], (string) $c['tss_id'], (string) $c['client_id']);
+        });
+
         $this->app->singleton(PaymentGateway::class, function (): PaymentGateway {
             if (blank(config('services.stripe.secret'))) {
                 return new FakeGateway;
@@ -74,6 +88,8 @@ class AppServiceProvider extends ServiceProvider
     {
         Date::use(CarbonImmutable::class);
         Model::shouldBeStrict(! $this->app->isProduction());
+
+        Gate::define('admin', fn (User $user) => $user->isAdmin());
 
         // market wifi: many guests may share one IP
         RateLimiter::for('checkout', fn (Request $request) => Limit::perMinute(30)->by($request->ip()));

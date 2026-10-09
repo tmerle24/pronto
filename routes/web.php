@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\Admin\QrController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Display\BoardController;
 use App\Http\Controllers\Guest\CheckoutController;
 use App\Http\Controllers\Guest\MenuController;
@@ -20,6 +22,7 @@ Route::post('/e/{event}/orders', [CheckoutController::class, 'store'])
     ->name('guest.checkout');
 
 Route::get('/o/{order}', [OrderController::class, 'show'])->name('guest.order');
+Route::get('/o/{order}/beleg.pdf', [OrderController::class, 'receipt'])->name('guest.order.receipt');
 Route::get('/o/{order}/bezahlen', [OrderController::class, 'pay'])->name('guest.order.pay');
 Route::post('/o/{order}/push', [NotificationController::class, 'push'])->middleware('throttle:10,1')->name('guest.order.push');
 Route::post('/o/{order}/sms', [NotificationController::class, 'sms'])->middleware('throttle:10,1')->name('guest.order.sms');
@@ -49,6 +52,12 @@ Route::prefix('team')->name('team.')->group(function () {
         Route::post('/intake/accepting', [IntakeController::class, 'accepting'])->name('intake.accepting');
         Route::post('/menu-items/{item}/sold-out', [IntakeController::class, 'soldOut'])->name('menu-items.sold-out');
     });
+});
+
+Route::prefix('team/admin/tools')->name('admin.')->middleware(['auth', 'can:admin'])->group(function () {
+    Route::get('/events/{event:id}/qr', [QrController::class, 'show'])->name('events.qr');
+    Route::get('/events/{event:id}/qr.svg', [QrController::class, 'svg'])->name('events.qr.svg');
+    Route::get('/report.csv', [ReportController::class, 'csv'])->name('report.csv');
 });
 
 Route::post('/webhooks/stripe', StripeWebhookController::class)->name('webhooks.stripe');

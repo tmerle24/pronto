@@ -39,6 +39,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property ?CarbonImmutable $cancelled_at
  * @property ?CarbonImmutable $paid_at
  * @property ?CarbonImmutable $customer_notified_at
+ * @property ?string $receipt_number
+ * @property ?array<string, mixed> $fiscal_data
+ * @property ?string $cancel_reason
+ * @property ?CarbonImmutable $refunded_at
  * @property CarbonImmutable $created_at
  * @property-read Event $event
  */
@@ -71,6 +75,8 @@ class Order extends Model
             'cancelled_at' => 'immutable_datetime',
             'paid_at' => 'immutable_datetime',
             'customer_notified_at' => 'immutable_datetime',
+            'fiscal_data' => 'array',
+            'refunded_at' => 'immutable_datetime',
             'created_at' => 'immutable_datetime',
             'updated_at' => 'immutable_datetime',
         ];

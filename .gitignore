@@ -30,3 +30,8 @@ Thumbs.db
 /incoming
 /.claude
 .deploy.conf
+
+# Filament assets, published by composer (filament:upgrade)
+/public/css/filament
+/public/js/filament
+/public/fonts/filament

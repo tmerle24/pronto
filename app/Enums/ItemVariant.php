@@ -2,7 +2,7 @@
 
 namespace App\Enums;
 
-enum ItemVariant: string
+enum ItemVariant: string implements Labelled
 {
     case Whole = 'whole';
     case Slice = 'slice';
