@@ -50,7 +50,7 @@ class MenuSeeder extends Seeder
                     'additives' => $additives,
                     'oven_units' => $units,
                     'sort' => ($sort + 1) * 10,
-                    'icon' => $icons[$name] ?? null,
+                    'icon' => $icons[$name],
                 ],
             );
         }
