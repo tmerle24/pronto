@@ -122,7 +122,7 @@ onMounted(() => {
                                 <!-- count sits on the picture, so it never covers the price -->
                                 <span
                                     v-if="quantities[item.id]"
-                                    class="absolute -top-2 -right-2 grid size-6 place-items-center rounded-full bg-rosso text-sm font-extrabold text-white tabular-nums"
+                                    class="absolute -top-2 -right-2 grid size-6 place-items-center rounded-full bg-rosso text-sm font-extrabold text-white tabular-nums ring-2 ring-raised"
                                 >{{ quantities[item.id] }}</span>
                             </span>
                             <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
