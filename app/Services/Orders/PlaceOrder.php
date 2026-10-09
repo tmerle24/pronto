@@ -91,8 +91,11 @@ class PlaceOrder
 
         return match ($method) {
             PaymentMethod::Online => $this->startOnlinePayment($order),
-            PaymentMethod::Cash => $this->queue->release($order),
-            PaymentMethod::CounterCard => $this->queue->release($this->orderPayments->markPaid($order, $user)),
+            // at the counter cash is paid on the spot, from the QR page at pickup
+            PaymentMethod::Cash => $this->queue->release(
+                $source === OrderSource::Counter ? $this->orderPayments->markPaid($order, $user, 'counter_cash') : $order,
+            ),
+            PaymentMethod::CounterCard => $this->queue->release($this->orderPayments->markPaid($order, $user, 'counter_card')),
         };
     }
 
@@ -104,6 +107,9 @@ class PlaceOrder
         // the counter may still take orders during a pause
         if ($source === OrderSource::Qr && ! $event->isOpenForOrders()) {
             throw new OrderRejected('Gerade nehmen wir keine Bestellungen an.');
+        }
+        if ($source === OrderSource::Counter && $method === PaymentMethod::Online) {
+            throw new OrderRejected('Ungültige Bestellung.');
         }
         if ($source === OrderSource::Qr && $method === PaymentMethod::CounterCard) {
             throw new OrderRejected('Diese Zahlungsart gibt es nur an der Theke.');

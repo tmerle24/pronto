@@ -4,12 +4,13 @@ namespace App\Broadcasting;
 
 use App\Models\Event;
 use App\Services\WaitTime\EventWaitTimes;
+use App\Support\EventStatusView;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
 
 /**
- * One message for all open status pages, queue and display: general wait
- * time plus per pickup number. No personal data.
+ * One message for all open guest pages, queue and display: general wait
+ * time, per pickup number and intake state. No personal data.
  */
 class WaitTimesUpdated implements ShouldBroadcastNow
 {
@@ -30,6 +31,10 @@ class WaitTimesUpdated implements ShouldBroadcastNow
     {
         $times = new EventWaitTimes($this->event);
 
-        return ['general' => $times->general()->toArray(), 'orders' => $times->allOpen()];
+        return [
+            'general' => $times->general()->toArray(),
+            'orders' => $times->allOpen(),
+            'status' => EventStatusView::make($this->event),
+        ];
     }
 }

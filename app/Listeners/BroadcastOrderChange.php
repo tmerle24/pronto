@@ -7,6 +7,7 @@ use App\Broadcasting\GuestOrderUpdated;
 use App\Broadcasting\TeamOrderUpdated;
 use App\Broadcasting\WaitTimesUpdated;
 use App\Events\CustomerNotified;
+use App\Events\EventSettingsChanged;
 use App\Events\OrderPaymentChanged;
 use App\Events\OrderQueued;
 use App\Events\OrderStatusChanged;
@@ -36,6 +37,15 @@ class BroadcastOrderChange implements ShouldHandleEventsAfterCommit
             } catch (Throwable $e) {
                 report($e);
             }
+        }
+    }
+
+    public function handleSettings(EventSettingsChanged $event): void
+    {
+        try {
+            broadcast(new WaitTimesUpdated($event->event));
+        } catch (Throwable $e) {
+            report($e);
         }
     }
 }

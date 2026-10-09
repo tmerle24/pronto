@@ -1,5 +1,8 @@
 <script setup>
+import IntakeControls from '@/Components/IntakeControls.vue';
+import TeamNav from '@/Components/TeamNav.vue';
 import Wordmark from '@/Components/Wordmark.vue';
+import { registerServiceWorker } from '@/lib/push';
 import { ageLabel } from '@/lib/age';
 import { connected, useEcho } from '@/lib/echo';
 import { getJson, NetworkError } from '@/lib/http';
@@ -13,6 +16,9 @@ const props = defineProps({
     event: Object,
     orders: Array,
     wait: Object,
+    status: Object,
+    items: Array,
+    pause_options: Array,
     server_time: String,
 });
 
@@ -32,6 +38,7 @@ const now = ref(Date.now());
 const clockOffset = new Date(props.server_time).getTime() - Date.now();
 const toast = ref(null);
 const wait = ref(props.wait);
+const status = ref(props.status);
 const notice = ref('');
 let toastTimer = null;
 let noticeTimer = null;
@@ -126,6 +133,11 @@ function hideToast() {
     toast.value = null;
 }
 
+function setStatus(value) {
+    status.value = value;
+    now.value = Date.now() + clockOffset;
+}
+
 function showNotice(text) {
     notice.value = text;
     clearTimeout(noticeTimer);
@@ -153,6 +165,7 @@ async function resync() {
         }
         state.orders.forEach(receive);
         wait.value = state.wait;
+        status.value = state.status;
     } catch (e) {
         if (!(e instanceof NetworkError)) throw e;
     }
@@ -184,7 +197,11 @@ onMounted(() => {
 
     const echo = useEcho(usePage().props.realtime);
     echo?.private(`team.${props.event?.id}`).listen('.order.updated', (e) => receive(e.order));
-    echo?.channel(`wait.${props.event?.id}`).listen('.wait.updated', (e) => (wait.value = e.general));
+    echo?.channel(`wait.${props.event?.id}`).listen('.wait.updated', (e) => {
+        wait.value = e.general;
+        setStatus(e.status);
+    });
+    registerServiceWorker();
     // safety net for missed messages and the socket being down
     resyncTimer = setInterval(resync, 15000);
     window.addEventListener('online', resync);
@@ -203,9 +220,17 @@ const live = computed(() => connected.value && !outbox.offline.value);
     <div class="flex h-dvh flex-col bg-crema text-carbone select-none">
         <header class="flex h-16 shrink-0 items-center gap-4 px-4">
             <Wordmark class="text-2xl" />
-            <span class="font-script text-2xl text-rosso">Cucina</span>
-            <span class="truncate text-grigio">{{ event?.name }}</span>
+            <TeamNav current="team.queue" />
             <span class="ml-auto"></span>
+            <IntakeControls
+                v-if="event"
+                :status="status"
+                :items="items"
+                :pause-options="pause_options"
+                :now="now"
+                @update:status="setStatus"
+                @error="showNotice"
+            />
             <span v-if="wait" class="rounded-full bg-raised px-4 py-2 text-lg">
                 <span class="label-caps text-grigio">Wartezeit</span>
                 <strong class="ml-2">{{ wait.low }}-{{ wait.high }} Min</strong>

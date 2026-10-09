@@ -1,32 +1,29 @@
 import { ref } from 'vue';
 import { NetworkError, postJson } from './http';
+import { getItem, setItem } from './idb';
 
 /**
- * Ordered queue of status changes from the tablet. Persisted, so a reload or a
- * dead network loses nothing; sent strictly in order, server is idempotent per
- * request_id.
+ * Ordered queue of status changes from the tablet. Persisted in IndexedDB, so
+ * a reload or a dead network loses nothing; sent strictly in order, server is
+ * idempotent per request_id.
  */
 export function useOutbox(storageKey, { onResult }) {
-    const ops = ref(load());
+    const ops = ref([]);
     const offline = ref(false);
     let sending = false;
     let retryTimer = null;
     let retryDelay = 2000;
 
-    function load() {
-        try {
-            return JSON.parse(localStorage.getItem(storageKey) ?? '[]');
-        } catch {
-            return [];
+    // ops queued before the stored ones were loaded keep their order after them
+    const ready = getItem(storageKey).then((stored) => {
+        if (Array.isArray(stored) && stored.length) {
+            ops.value = [...stored.map((op) => ({ ...op, inFlight: false })), ...ops.value];
         }
-    }
+    });
 
+    // after loading, otherwise an early write would drop the stored ops
     function persist() {
-        try {
-            localStorage.setItem(storageKey, JSON.stringify(ops.value));
-        } catch {
-            // storage full or blocked: queue still works in memory
-        }
+        ready.then(() => setItem(storageKey, ops.value));
     }
 
     function push(op) {
@@ -45,6 +42,7 @@ export function useOutbox(storageKey, { onResult }) {
     }
 
     async function flush() {
+        await ready;
         if (sending) return;
         sending = true;
         clearTimeout(retryTimer);
@@ -78,7 +76,7 @@ export function useOutbox(storageKey, { onResult }) {
     }
 
     window.addEventListener('online', flush);
-    if (ops.value.length) flush();
+    ready.then(() => ops.value.length && flush());
 
     return { ops, offline, push, cancel, flush };
 }

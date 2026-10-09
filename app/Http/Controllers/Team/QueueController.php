@@ -4,12 +4,14 @@ namespace App\Http\Controllers\Team;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Orders\InvalidTransition;
 use App\Services\Orders\OrderWorkflow;
 use App\Services\Orders\TransitionResult;
 use App\Services\WaitTime\EventWaitTimes;
+use App\Support\EventStatusView;
 use App\Support\TeamOrderView;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -26,6 +28,11 @@ class QueueController extends Controller
             'event' => $event?->only(['id', 'name', 'slug']),
             'orders' => $event ? $this->orders($event) : [],
             'wait' => $event ? (new EventWaitTimes($event))->general()->toArray() : null,
+            'status' => $event ? EventStatusView::make($event) : null,
+            'items' => $event === null ? [] : MenuItem::query()->forEditions($event->editions)->get(['id', 'name', 'variant', 'is_sold_out'])
+                ->map(fn (MenuItem $item) => ['id' => $item->id, 'name' => $item->name, 'variant' => $item->variant?->value])
+                ->values(),
+            'pause_options' => IntakeController::PAUSE_OPTIONS,
             'server_time' => now()->toIso8601String(),
         ]);
     }
@@ -38,6 +45,7 @@ class QueueController extends Controller
         return response()->json([
             'orders' => $event ? $this->orders($event) : [],
             'wait' => $event ? (new EventWaitTimes($event))->general()->toArray() : null,
+            'status' => $event ? EventStatusView::make($event) : null,
             'server_time' => now()->toIso8601String(),
         ]);
     }

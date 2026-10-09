@@ -5,6 +5,8 @@ use App\Http\Controllers\Guest\CheckoutController;
 use App\Http\Controllers\Guest\MenuController;
 use App\Http\Controllers\Guest\NotificationController;
 use App\Http\Controllers\Guest\OrderController;
+use App\Http\Controllers\Team\CounterController;
+use App\Http\Controllers\Team\IntakeController;
 use App\Http\Controllers\Team\LoginController;
 use App\Http\Controllers\Team\QueueController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
@@ -39,6 +41,13 @@ Route::prefix('team')->name('team.')->group(function () {
         Route::get('/queue/state', [QueueController::class, 'state'])->name('queue.state');
         Route::post('/orders/{order:id}/advance', [QueueController::class, 'advance'])->name('orders.advance');
         Route::post('/orders/{order:id}/undo', [QueueController::class, 'undo'])->name('orders.undo');
+
+        Route::get('/counter', [CounterController::class, 'show'])->name('counter');
+        Route::post('/counter', [CounterController::class, 'store'])->name('counter.store');
+
+        Route::post('/intake/pause', [IntakeController::class, 'pause'])->name('intake.pause');
+        Route::post('/intake/accepting', [IntakeController::class, 'accepting'])->name('intake.accepting');
+        Route::post('/menu-items/{item}/sold-out', [IntakeController::class, 'soldOut'])->name('menu-items.sold-out');
     });
 });
 

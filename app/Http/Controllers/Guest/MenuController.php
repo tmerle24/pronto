@@ -37,6 +37,7 @@ class MenuController extends Controller
 
         return Inertia::render('Guest/Menu', [
             'event' => $event === null ? null : [
+                'id' => $event->id,
                 'name' => $event->name,
                 'slug' => $event->slug,
                 'editions' => $event->editions->map(fn (MenuEdition $e) => $e->value)->values(),
