@@ -106,12 +106,12 @@ onMounted(() => {
             <section class="min-h-0 overflow-y-auto">
                 <div v-for="group in groups" :key="group.title" class="mb-4">
                     <h2 class="label-caps mb-2 text-grigio">{{ group.title }}</h2>
-                    <div v-for="(row, r) in group.rows" :key="r" class="mb-3 grid grid-cols-[repeat(3,minmax(0,300px))] gap-3">
+                    <div v-for="(row, r) in group.rows" :key="r" class="mb-3 grid grid-cols-3 gap-3">
                         <button
                             v-for="item in row"
                             :key="item.id"
                             type="button"
-                            class="relative flex min-h-20 items-center gap-3 rounded-card p-3 text-left"
+                            class="relative flex min-h-24 items-center gap-3 rounded-card p-3 text-left"
                             :class="[
                                 soldOut.has(item.id) ? 'bg-crema-scuro text-grigio' : 'bg-raised',
                                 // in the cart: whole tile framed, readable from the corner of the eye
@@ -121,8 +121,8 @@ onMounted(() => {
                             @click="add(item)"
                         >
                             <!-- one row, centred: picture | name over variant | price; gaps equal the tile padding (12 px) -->
-                            <span class="flex size-10 shrink-0 items-center justify-center">
-                                <MenuIcon :icon="item.icon" :variant="item.variant" class="h-10" />
+                            <span class="flex size-12 shrink-0 items-center justify-center">
+                                <MenuIcon :icon="item.icon" :variant="item.variant" class="h-12" />
                             </span>
                             <!-- count as a pill "2 ×" in its own column, so name and variant stay aligned; fine here, the tile has no other buttons -->
                             <span
