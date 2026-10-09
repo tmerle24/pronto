@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Services\Orders\InvalidTransition;
 use App\Services\Orders\OrderWorkflow;
 use App\Services\Orders\TransitionResult;
+use App\Services\WaitTime\EventWaitTimes;
 use App\Support\TeamOrderView;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ class QueueController extends Controller
         return Inertia::render('Team/Queue', [
             'event' => $event?->only(['id', 'name', 'slug']),
             'orders' => $event ? $this->orders($event) : [],
+            'wait' => $event ? (new EventWaitTimes($event))->general()->toArray() : null,
             'server_time' => now()->toIso8601String(),
         ]);
     }
@@ -35,6 +37,7 @@ class QueueController extends Controller
 
         return response()->json([
             'orders' => $event ? $this->orders($event) : [],
+            'wait' => $event ? (new EventWaitTimes($event))->general()->toArray() : null,
             'server_time' => now()->toIso8601String(),
         ]);
     }

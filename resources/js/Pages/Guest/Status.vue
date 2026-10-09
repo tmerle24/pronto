@@ -4,16 +4,19 @@ import OrderSummary from '@/Components/OrderSummary.vue';
 import { t } from '@/lib/i18n';
 import { euro } from '@/lib/money';
 import { connected, useEcho } from '@/lib/echo';
+import { aheadLabel, waitLabel } from '@/lib/wait';
 import { Head, Link, router, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps({
     order: Object,
     event: Object,
+    wait: Object,
 });
 
 // live copy, replaced by websocket pushes and polling
 const live = ref(props.order);
+const wait = ref(props.wait);
 const order = computed(() => live.value);
 
 const finished = computed(() => ['picked_up', 'cancelled'].includes(order.value.status));
@@ -30,12 +33,20 @@ const statusText = computed(() => ({
 // websocket first; polling every 10 s while it is not connected
 let timer = null;
 onMounted(() => {
-    useEcho(usePage().props.realtime)
-        ?.channel(`order.${props.order.token}`)
-        .listen('.order.updated', (e) => (live.value = e.order));
+    const echo = useEcho(usePage().props.realtime);
+    echo?.channel(`order.${props.order.token}`).listen('.order.updated', (e) => (live.value = e.order));
+    echo?.channel(`wait.${props.event.id}`).listen('.wait.updated', (e) => {
+        if (order.value.number) wait.value = e.orders[order.value.number] ?? null;
+    });
     timer = setInterval(() => {
         if (finished.value || connected.value) return;
-        router.reload({ only: ['order'], onSuccess: (page) => (live.value = page.props.order) });
+        router.reload({
+            only: ['order', 'wait'],
+            onSuccess: (page) => {
+                live.value = page.props.order;
+                wait.value = page.props.wait;
+            },
+        });
     }, 10000);
 });
 onUnmounted(() => clearInterval(timer));
@@ -61,6 +72,11 @@ onUnmounted(() => clearInterval(timer));
             <h1 class="font-display text-2xl font-bold">{{ t('Deine Nummer') }}</h1>
             <p class="font-display text-[8rem] leading-none font-black text-rosso" aria-live="polite">{{ order.number }}</p>
             <p class="label-caps mt-2" :class="order.status === 'ready' ? 'text-basilico' : 'text-carbone'">{{ statusText }}</p>
+
+            <div v-if="wait && ['new', 'in_progress'].includes(order.status)" class="mt-4 rounded-card bg-raised p-4" aria-live="polite">
+                <p class="font-display text-3xl font-bold">{{ waitLabel(wait) }}</p>
+                <p class="text-grigio">{{ aheadLabel(wait.ahead) }}</p>
+            </div>
 
             <p v-if="order.payment_method === 'cash' && order.payment_status === 'pending'" class="mt-4 rounded-card bg-oro p-3 font-semibold text-carbone">
                 {{ t('Bitte bezahl :sum bar bei der Abholung.', { sum: euro(order.total_cents) }) }}

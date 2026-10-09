@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Event;
 use App\Models\MenuItem;
 use App\Services\Payments\OnlinePayments;
+use App\Services\WaitTime\EventWaitTimes;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -44,6 +45,7 @@ class MenuController extends Controller
                 'pause_message' => $event->pause_message,
                 'cash_allowed' => $event->cash_allowed,
                 'online_allowed' => $online->enabled(),
+                'wait' => (new EventWaitTimes($event))->general()->toArray(),
             ],
             'items' => $items,
         ]);

@@ -12,6 +12,7 @@ import { computed, onMounted, onUnmounted, reactive, ref } from 'vue';
 const props = defineProps({
     event: Object,
     orders: Array,
+    wait: Object,
     server_time: String,
 });
 
@@ -30,6 +31,7 @@ const started = ref(false);
 const now = ref(Date.now());
 const clockOffset = new Date(props.server_time).getTime() - Date.now();
 const toast = ref(null);
+const wait = ref(props.wait);
 const notice = ref('');
 let toastTimer = null;
 let noticeTimer = null;
@@ -150,6 +152,7 @@ async function resync() {
             if (!ids.has(id) && card.status !== 'picked_up') cards.delete(id);
         }
         state.orders.forEach(receive);
+        wait.value = state.wait;
     } catch (e) {
         if (!(e instanceof NetworkError)) throw e;
     }
@@ -181,6 +184,7 @@ onMounted(() => {
 
     const echo = useEcho(usePage().props.realtime);
     echo?.private(`team.${props.event?.id}`).listen('.order.updated', (e) => receive(e.order));
+    echo?.channel(`wait.${props.event?.id}`).listen('.wait.updated', (e) => (wait.value = e.general));
     // safety net for missed messages and the socket being down
     resyncTimer = setInterval(resync, 15000);
     window.addEventListener('online', resync);
@@ -202,6 +206,10 @@ const live = computed(() => connected.value && !outbox.offline.value);
             <span class="font-script text-2xl text-rosso">Cucina</span>
             <span class="truncate text-grigio">{{ event?.name }}</span>
             <span class="ml-auto"></span>
+            <span v-if="wait" class="rounded-full bg-raised px-4 py-2 text-lg">
+                <span class="label-caps text-grigio">Wartezeit</span>
+                <strong class="ml-2">{{ wait.low }}-{{ wait.high }} Min</strong>
+            </span>
             <span
                 v-if="outbox.offline.value"
                 class="rounded-full bg-oro px-4 py-2 font-bold text-carbone"

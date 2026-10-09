@@ -3,6 +3,7 @@ import Wordmark from '@/Components/Wordmark.vue';
 import { useEcho } from '@/lib/echo';
 import { getJson, NetworkError } from '@/lib/http';
 import { chime, unlockAudio } from '@/lib/sound';
+import { waitLabel } from '@/lib/wait';
 import { keepAwake } from '@/lib/wakeLock';
 import { Head, usePage } from '@inertiajs/vue3';
 import { onMounted, onUnmounted, ref } from 'vue';
@@ -10,6 +11,7 @@ import { onMounted, onUnmounted, ref } from 'vue';
 const props = defineProps({
     event: Object,
     board: Object,
+    wait: Object,
 });
 
 const page = usePage();
@@ -18,6 +20,7 @@ const ready = ref(props.board.ready);
 const fresh = ref(new Set());
 const started = ref(false);
 const gong = ref(true);
+const wait = ref(props.wait);
 
 function apply(board) {
     const before = new Set(ready.value);
@@ -33,7 +36,9 @@ function apply(board) {
 
 async function poll() {
     try {
-        apply((await getJson(route('display.state', props.event.token))).board);
+        const state = await getJson(route('display.state', props.event.token));
+        apply(state.board);
+        wait.value = state.wait;
     } catch (e) {
         if (!(e instanceof NetworkError)) throw e;
     }
@@ -48,7 +53,9 @@ async function start() {
 
 let timer = null;
 onMounted(() => {
-    useEcho(page.props.realtime)?.channel(`board.${props.event.token}`).listen('.board.updated', (e) => apply(e.board));
+    const echo = useEcho(page.props.realtime);
+    echo?.channel(`board.${props.event.token}`).listen('.board.updated', (e) => apply(e.board));
+    echo?.channel(`wait.${props.event.id}`).listen('.wait.updated', (e) => (wait.value = e.general));
     // fallback and self-healing
     timer = setInterval(poll, 15000);
 });
@@ -91,6 +98,7 @@ onUnmounted(() => clearInterval(timer));
 
         <footer class="flex items-center justify-between gap-6 border-t border-crema/15 px-8 py-4 text-xl">
             <span class="label-caps text-base">Scan &amp; bestell: QR-Code am Stand</span>
+            <span v-if="wait" class="label-caps text-base text-oro">Wartezeit gerade {{ waitLabel(wait) }}</span>
             <span class="font-semibold">{{ page.props.brand.instagram }}</span>
         </footer>
 

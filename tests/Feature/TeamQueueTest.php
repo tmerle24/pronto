@@ -119,7 +119,8 @@ class TeamQueueTest extends TestCase
         $this->get('/display/wrong-token')->assertNotFound();
         $this->get("/display/{$this->event->display_token}/state")
             ->assertOk()
-            ->assertExactJson(['board' => ['in_oven' => [$order->pickup_number], 'ready' => []]]);
+            ->assertJsonPath('board', ['in_oven' => [$order->pickup_number], 'ready' => []])
+            ->assertJsonStructure(['wait' => ['low', 'high']]);
     }
 
     public function test_team_channel_requires_login(): void

@@ -9,6 +9,7 @@ use App\Models\Order;
 use App\Services\Orders\OrderPayments;
 use App\Services\Payments\OnlinePayments;
 use App\Services\Payments\PaymentGateway;
+use App\Services\WaitTime\EventWaitTimes;
 use App\Support\GuestOrderView;
 use Illuminate\Http\RedirectResponse;
 use Inertia\Inertia;
@@ -22,7 +23,8 @@ class OrderController extends Controller
 
         return Inertia::render('Guest/Status', [
             'order' => GuestOrderView::make($order),
-            'event' => $order->event->only(['name', 'slug']),
+            'event' => $order->event->only(['id', 'name', 'slug']),
+            'wait' => (new EventWaitTimes($order->event))->forOrder($order),
         ]);
     }
 

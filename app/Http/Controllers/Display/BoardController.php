@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Display;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
+use App\Services\WaitTime\EventWaitTimes;
 use App\Support\BoardView;
 use Illuminate\Http\JsonResponse;
 use Inertia\Inertia;
@@ -16,14 +17,20 @@ class BoardController extends Controller
         $event = $this->event($token);
 
         return Inertia::render('Display/Board', [
-            'event' => ['name' => $event->name, 'token' => $event->display_token],
+            'event' => ['id' => $event->id, 'name' => $event->name, 'token' => $event->display_token],
             'board' => BoardView::make($event),
+            'wait' => (new EventWaitTimes($event))->general()->toArray(),
         ]);
     }
 
     public function state(string $token): JsonResponse
     {
-        return response()->json(['board' => BoardView::make($this->event($token))]);
+        $event = $this->event($token);
+
+        return response()->json([
+            'board' => BoardView::make($event),
+            'wait' => (new EventWaitTimes($event))->general()->toArray(),
+        ]);
     }
 
     private function event(string $token): Event

@@ -5,6 +5,7 @@ namespace App\Listeners;
 use App\Broadcasting\BoardUpdated;
 use App\Broadcasting\GuestOrderUpdated;
 use App\Broadcasting\TeamOrderUpdated;
+use App\Broadcasting\WaitTimesUpdated;
 use App\Events\OrderPaymentChanged;
 use App\Events\OrderQueued;
 use App\Events\OrderStatusChanged;
@@ -21,7 +22,14 @@ class BroadcastOrderChange implements ShouldHandleEventsAfterCommit
     {
         $order = $event->order;
 
-        foreach ([new TeamOrderUpdated($order), new GuestOrderUpdated($order), new BoardUpdated($order->event)] as $message) {
+        $messages = [
+            new TeamOrderUpdated($order),
+            new GuestOrderUpdated($order),
+            new BoardUpdated($order->event),
+            new WaitTimesUpdated($order->event),
+        ];
+
+        foreach ($messages as $message) {
             try {
                 broadcast($message);
             } catch (Throwable $e) {

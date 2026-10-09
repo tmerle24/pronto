@@ -5,6 +5,7 @@ import { useCart } from '@/lib/cart';
 import { t, variantLabel } from '@/lib/i18n';
 import { euro } from '@/lib/money';
 import { unlockAudio } from '@/lib/sound';
+import { waitLabel } from '@/lib/wait';
 import { Head, useForm } from '@inertiajs/vue3';
 import { computed, ref } from 'vue';
 
@@ -52,7 +53,9 @@ function submit(method) {
         <template v-if="event">
             <p class="mt-6 font-script text-3xl text-rosso">Il menù</p>
             <h1 class="font-display text-4xl font-bold">{{ t("Was darf's sein?") }}</h1>
-            <p class="mt-1 text-grigio">{{ event.name }}</p>
+            <p class="mt-1 text-grigio">
+                {{ event.name }}<template v-if="event.open && event.wait"> · {{ t('Wartezeit') }} {{ waitLabel(event.wait) }}</template>
+            </p>
 
             <div v-if="!event.open" class="mt-6 rounded-card bg-carbone p-4 text-crema" role="status">
                 <p class="font-display text-xl font-bold">
