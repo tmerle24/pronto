@@ -58,6 +58,7 @@ class OrderController extends Controller
                 'key' => config('services.stripe.key'),
                 'client_secret' => $gateway->clientSecret($order),
             ],
+            'demo' => $online->simulated(),
             'return_url' => route('guest.order', $order),
         ]);
     }

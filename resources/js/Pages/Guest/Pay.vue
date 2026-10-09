@@ -12,13 +12,15 @@ const props = defineProps({
     order: Object,
     event: Object,
     stripe: Object,
+    demo: Boolean,
     return_url: String,
 });
 
 const ready = ref(false);
 const paying = ref(false);
 const error = ref('');
-let stripe = null;
+// not "stripe": the template must see the prop of that name
+let stripeJs = null;
 let elements = null;
 
 const css = getComputedStyle(document.documentElement);
@@ -26,8 +28,8 @@ const token = (name) => css.getPropertyValue(`--${name}`).trim();
 
 onMounted(async () => {
     if (!props.stripe) return;
-    stripe = await loadStripe(props.stripe.key);
-    elements = stripe.elements({
+    stripeJs = await loadStripe(props.stripe.key);
+    elements = stripeJs.elements({
         clientSecret: props.stripe.client_secret,
         locale: document.documentElement.lang || 'de',
         appearance: {
@@ -56,7 +58,7 @@ async function confirm() {
     unlockAudio();
     paying.value = true;
     error.value = '';
-    const { error: failure } = await stripe.confirmPayment({
+    const { error: failure } = await stripeJs.confirmPayment({
         elements,
         confirmParams: { return_url: props.return_url },
     });
@@ -92,6 +94,9 @@ function simulate() {
                 {{ paying ? t('Einen Moment...') : `${t('Jetzt bezahlen')} · ${euro(order.total_cents)}` }}
             </button>
         </template>
+        <p v-else-if="!demo" class="mt-6 rounded-card bg-rosso p-4 font-semibold text-white" role="alert">
+            {{ t('Online-Zahlung ist gerade nicht möglich.') }}
+        </p>
         <div v-else class="mt-6 rounded-card border-2 border-dashed border-grigio p-4">
             <p class="label-caps text-grigio">{{ t('Demo ohne Stripe') }}</p>
             <button type="button" class="mt-3 h-14 w-full rounded-full bg-rosso text-lg font-extrabold text-white" @click="simulate">

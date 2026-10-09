@@ -129,7 +129,8 @@ class CheckoutTest extends TestCase
 
         $this->get(route('guest.order.pay', $order))->assertOk()->assertInertia(fn ($page) => $page
             ->component('Guest/Pay')
-            ->where('stripe', null));
+            ->where('stripe', null)
+            ->where('demo', true));
 
         $this->post(route('guest.order.simulate', $order))->assertRedirect(route('guest.order', $order));
 
