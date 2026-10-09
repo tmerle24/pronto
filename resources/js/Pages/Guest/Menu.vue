@@ -105,11 +105,13 @@ function submit(method) {
                         class="flex items-center gap-3 rounded-card bg-raised p-4"
                         :class="{ 'opacity-60': soldOut.has(item.id) }"
                     >
-                        <MenuIcon :icon="item.icon" :variant="item.variant" class="size-10" />
                         <div class="min-w-0 flex-1">
-                            <p class="font-display text-xl font-bold leading-tight">
-                                {{ item.name }}
-                                <span v-if="item.variant" class="font-sans text-base font-normal text-grigio">{{ variantLabel(item.variant) }}</span>
+                            <p class="flex items-center gap-2 font-display text-xl font-bold leading-tight">
+                                <MenuIcon :icon="item.icon" :variant="item.variant" class="size-9" />
+                                <span>
+                                    {{ item.name }}
+                                    <span v-if="item.variant" class="font-sans text-base font-normal text-grigio">{{ variantLabel(item.variant) }}</span>
+                                </span>
                             </p>
                             <p class="text-sm text-grigio">{{ item.description }}</p>
                             <p class="mt-1 font-display text-lg font-bold">
