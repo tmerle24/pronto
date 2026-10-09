@@ -29,6 +29,8 @@ class AdminPanelProvider extends PanelProvider
             ->path('team/admin')
             // login lives at /team/login, shared with the tablets
             ->brandName('TIAMO Pronto')
+            // own page to change name and password
+            ->profile(isSimple: false)
             ->favicon('/icons/bildmarke.svg')
             ->font('Inter')
             ->colors([
