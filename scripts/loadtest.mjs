@@ -6,7 +6,7 @@
 //   node scripts/loadtest.mjs [baseUrl] [orders] [listeners]
 //   node scripts/loadtest.mjs http://localhost:8047 60 50
 
-import Pusher from 'pusher-js';
+import WebSocket from 'ws';
 
 const BASE = process.argv[2] ?? 'http://localhost:8047';
 const ORDERS = Number(process.argv[3] ?? 60);
@@ -100,19 +100,28 @@ console.log(`Status pages:  ${stats(statusTimes)}`);
 const received = new Map();
 const sockets = [];
 if (realtime) {
-    await Promise.all(listening.map((token) => new Promise((resolve) => {
-        const pusher = new Pusher(realtime.key, {
-            wsHost: realtime.host, wsPort: realtime.port, wssPort: realtime.port,
-            forceTLS: realtime.scheme === 'https', enabledTransports: ['ws', 'wss'], cluster: 'mt1',
+    // plain Pusher protocol over ws, so the Origin header can be set like a browser does
+    const url = `${realtime.scheme === 'https' ? 'wss' : 'ws'}://${realtime.host}:${realtime.port}/app/${realtime.key}?protocol=7&client=js&version=8.4.0`;
+    await Promise.all(listening.map((token) => new Promise((resolve, reject) => {
+        const socket = new WebSocket(url, { headers: { Origin: BASE } });
+        sockets.push(socket);
+        socket.on('error', reject);
+        socket.on('message', (raw) => {
+            const message = JSON.parse(raw.toString());
+            if (message.event === 'pusher:connection_established') {
+                socket.send(JSON.stringify({ event: 'pusher:subscribe', data: { channel: `order.${token}` } }));
+            } else if (message.event === 'pusher_internal:subscription_succeeded') {
+                resolve();
+            } else if (message.event === 'order.updated') {
+                const order = JSON.parse(message.data).order;
+                const list = received.get(token) ?? [];
+                list.push({ status: order.status, number: order.number, at: performance.now() });
+                received.set(token, list);
+            } else if (message.event === 'pusher:ping') {
+                socket.send(JSON.stringify({ event: 'pusher:pong', data: {} }));
+            }
         });
-        sockets.push(pusher);
-        const channel = pusher.subscribe(`order.${token}`);
-        channel.bind('order.updated', (e) => {
-            const list = received.get(token) ?? [];
-            list.push({ status: e.order.status, number: e.order.number, at: performance.now() });
-            received.set(token, list);
-        });
-        channel.bind('pusher:subscription_succeeded', resolve);
+        setTimeout(() => reject(new Error('websocket subscribe timeout')), 10000);
     })));
     console.log(`Websockets:    ${sockets.length} subscribed`);
 }
@@ -146,7 +155,7 @@ if (realtime) {
         else delays.push(ready.at - sentAt.get(`${ready.number}:ready`));
     }
     console.log(`Ready pushes:  ${listening.length - missing}/${listening.length} received${missing ? ` (${missing} missing)` : ''}, delay after tap ${stats(delays)}`);
-    sockets.forEach((s) => s.disconnect());
+    sockets.forEach((s) => s.close());
 }
 
 console.log('Done. Orders stay in the database (never deleted); reset locally with migrate:fresh --seed.');
