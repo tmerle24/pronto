@@ -106,7 +106,7 @@ onMounted(() => {
             <section class="min-h-0 overflow-y-auto">
                 <div v-for="group in groups" :key="group.title" class="mb-4">
                     <h2 class="label-caps mb-2 text-grigio">{{ group.title }}</h2>
-                    <div v-for="(row, r) in group.rows" :key="r" class="mb-3 grid grid-cols-3 gap-3">
+                    <div v-for="(row, r) in group.rows" :key="r" class="mb-3 grid grid-cols-[repeat(3,minmax(0,300px))] gap-3">
                         <button
                             v-for="item in row"
                             :key="item.id"
