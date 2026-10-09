@@ -111,29 +111,26 @@ onMounted(() => {
                             v-for="item in row"
                             :key="item.id"
                             type="button"
-                            class="relative flex min-h-24 flex-col items-start justify-between rounded-card p-3 text-left"
+                            class="relative flex min-h-20 items-center gap-3 rounded-card p-3 text-left"
                             :class="soldOut.has(item.id) ? 'bg-crema-scuro text-grigio' : 'bg-raised'"
                             :disabled="soldOut.has(item.id)"
                             @click="add(item)"
                         >
-                            <!-- picture | text: gap equals the tile padding (12 px) -->
-                            <span class="flex w-full flex-1 items-center gap-3">
-                                <!-- fixed slot, vertically centred; names stay aligned across tiles -->
-                                <span class="flex size-10 shrink-0 items-center justify-center">
-                                    <MenuIcon :icon="item.icon" :variant="item.variant" class="h-10" />
-                                </span>
-                                <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
-                                <span class="-ml-0.5 flex min-h-full flex-1 flex-col justify-between gap-2 self-stretch">
-                                    <span class="font-display text-xl leading-tight font-bold">
-                                        {{ item.name }} <span class="font-sans text-base font-normal">{{ VARIANT[item.variant] ?? '' }}</span>
-                                    </span>
-                                    <span class="font-semibold">{{ soldOut.has(item.id) ? 'Ausverkauft' : euro(item.price_cents + item.deposit_cents) }}</span>
-                                </span>
+                            <!-- one row, centred: picture | name over variant | price; gaps equal the tile padding (12 px) -->
+                            <span class="relative flex size-10 shrink-0 items-center justify-center">
+                                <MenuIcon :icon="item.icon" :variant="item.variant" class="h-10" />
+                                <!-- count sits on the picture, so it never covers the price -->
+                                <span
+                                    v-if="quantities[item.id]"
+                                    class="absolute -top-2 -right-2 grid size-6 place-items-center rounded-full bg-rosso text-sm font-extrabold text-white tabular-nums"
+                                >{{ quantities[item.id] }}</span>
                             </span>
-                            <span
-                                v-if="quantities[item.id]"
-                                class="absolute top-2 right-2 grid size-9 place-items-center rounded-full bg-rosso font-display text-lg font-black text-white"
-                            >{{ quantities[item.id] }}</span>
+                            <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
+                            <span class="-ml-0.5 min-w-0 flex-1 leading-tight">
+                                <span class="block font-display text-xl font-bold">{{ item.name }}</span>
+                                <span v-if="item.variant" class="block text-sm text-grigio">{{ VARIANT[item.variant] }}</span>
+                            </span>
+                            <span class="shrink-0 font-semibold tabular-nums">{{ soldOut.has(item.id) ? 'Ausverkauft' : euro(item.price_cents + item.deposit_cents) }}</span>
                         </button>
                     </div>
                 </div>
