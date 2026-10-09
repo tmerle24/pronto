@@ -359,7 +359,11 @@ step "Admin-Zugang"
 RESULT=$("php$PHP_VERSION" artisan pronto:user "$ADMIN_EMAIL" --name="$ADMIN_NAME" --admin | tail -n 1)
 case "$RESULT" in
     EXISTS)    skip "$ADMIN_EMAIL existiert" ;;
-    CREATED\ *) ok "Zugang $ADMIN_EMAIL, Passwort: ${RESULT#CREATED } (jetzt notieren, wird nicht wieder angezeigt)" ;;
+    CREATED\ *)
+        # not on screen: terminals and logs keep it forever
+        umask 077
+        printf '%s\n%s\n' "$ADMIN_EMAIL" "${RESULT#CREATED }" > "$HOME/pronto-admin.txt"
+        ok "Zugang $ADMIN_EMAIL angelegt, Passwort in ~/pronto-admin.txt (nach dem Notieren löschen)" ;;
     *)         warn "Zugang ließ sich nicht anlegen: php artisan pronto:user $ADMIN_EMAIL --admin" ;;
 esac
 
