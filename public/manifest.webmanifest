@@ -1,0 +1,16 @@
+{
+    "name": "TIAMO Pronto",
+    "short_name": "TIAMO",
+    "description": "Pizza con amore - dal forno di Timo",
+    "lang": "de",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "background_color": "#FBF4E6",
+    "theme_color": "#B8202B",
+    "icons": [
+        { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+        { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+    ]
+}

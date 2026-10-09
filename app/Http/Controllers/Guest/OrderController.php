@@ -25,6 +25,7 @@ class OrderController extends Controller
             'order' => GuestOrderView::make($order),
             'event' => $order->event->only(['id', 'name', 'slug']),
             'wait' => (new EventWaitTimes($order->event))->forOrder($order),
+            'vapid_public_key' => config('pronto.webpush.public_key'),
         ]);
     }
 

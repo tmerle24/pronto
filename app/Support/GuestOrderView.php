@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Enums\NotificationChannel;
+use App\Enums\NotificationStatus;
 use App\Models\Order;
 use App\Models\OrderItem;
 
@@ -10,6 +12,16 @@ use App\Models\OrderItem;
  */
 final class GuestOrderView
 {
+    private static function whatsAppLink(Order $order): ?string
+    {
+        $number = config('pronto.whatsapp.number');
+        if (blank($number) || $order->pickup_number === null) {
+            return null;
+        }
+
+        return 'https://wa.me/'.$number.'?text='.rawurlencode("Bestellung {$order->pickup_number} {$order->short_code}");
+    }
+
     /**
      * @return array<string, mixed>
      */
@@ -26,6 +38,15 @@ final class GuestOrderView
             'total_cents' => $order->total_cents,
             'created_at' => $order->created_at->toIso8601String(),
             'ready_at' => $order->ready_at?->toIso8601String(),
+            // which channels will ring, never the contact data
+            'channels' => $order->notificationSubscriptions()
+                ->whereIn('status', [NotificationStatus::Active, NotificationStatus::Sent])
+                ->pluck('channel')
+                ->map(fn (NotificationChannel $c) => $c->value)
+                ->unique()
+                ->values()
+                ->all(),
+            'whatsapp_link' => self::whatsAppLink($order),
             'items' => $order->items->map(fn (OrderItem $item) => [
                 'name' => $item->name,
                 'variant' => $item->variant?->value,

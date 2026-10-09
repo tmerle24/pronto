@@ -3,10 +3,12 @@
 use App\Http\Controllers\Display\BoardController;
 use App\Http\Controllers\Guest\CheckoutController;
 use App\Http\Controllers\Guest\MenuController;
+use App\Http\Controllers\Guest\NotificationController;
 use App\Http\Controllers\Guest\OrderController;
 use App\Http\Controllers\Team\LoginController;
 use App\Http\Controllers\Team\QueueController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
+use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [MenuController::class, 'show'])->name('guest.menu');
@@ -17,6 +19,8 @@ Route::post('/e/{event}/orders', [CheckoutController::class, 'store'])
 
 Route::get('/o/{order}', [OrderController::class, 'show'])->name('guest.order');
 Route::get('/o/{order}/bezahlen', [OrderController::class, 'pay'])->name('guest.order.pay');
+Route::post('/o/{order}/push', [NotificationController::class, 'push'])->middleware('throttle:10,1')->name('guest.order.push');
+Route::post('/o/{order}/sms', [NotificationController::class, 'sms'])->middleware('throttle:10,1')->name('guest.order.sms');
 Route::post('/o/{order}/demo-zahlung', [OrderController::class, 'simulatePayment'])->name('guest.order.simulate');
 
 Route::get('/display/{token}', [BoardController::class, 'show'])->name('display');
@@ -39,3 +43,5 @@ Route::prefix('team')->name('team.')->group(function () {
 });
 
 Route::post('/webhooks/stripe', StripeWebhookController::class)->name('webhooks.stripe');
+Route::get('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'verify']);
+Route::post('/webhooks/whatsapp', [WhatsAppWebhookController::class, 'receive'])->name('webhooks.whatsapp');

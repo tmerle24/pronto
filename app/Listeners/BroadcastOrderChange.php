@@ -6,6 +6,7 @@ use App\Broadcasting\BoardUpdated;
 use App\Broadcasting\GuestOrderUpdated;
 use App\Broadcasting\TeamOrderUpdated;
 use App\Broadcasting\WaitTimesUpdated;
+use App\Events\CustomerNotified;
 use App\Events\OrderPaymentChanged;
 use App\Events\OrderQueued;
 use App\Events\OrderStatusChanged;
@@ -18,7 +19,7 @@ use Throwable;
  */
 class BroadcastOrderChange implements ShouldHandleEventsAfterCommit
 {
-    public function handle(OrderQueued|OrderStatusChanged|OrderPaymentChanged $event): void
+    public function handle(OrderQueued|OrderStatusChanged|OrderPaymentChanged|CustomerNotified $event): void
     {
         $order = $event->order;
 
