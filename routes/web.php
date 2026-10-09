@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Controllers\Display\BoardController;
 use App\Http\Controllers\Guest\CheckoutController;
 use App\Http\Controllers\Guest\MenuController;
 use App\Http\Controllers\Guest\OrderController;
+use App\Http\Controllers\Team\LoginController;
+use App\Http\Controllers\Team\QueueController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -15,5 +18,24 @@ Route::post('/e/{event}/orders', [CheckoutController::class, 'store'])
 Route::get('/o/{order}', [OrderController::class, 'show'])->name('guest.order');
 Route::get('/o/{order}/bezahlen', [OrderController::class, 'pay'])->name('guest.order.pay');
 Route::post('/o/{order}/demo-zahlung', [OrderController::class, 'simulatePayment'])->name('guest.order.simulate');
+
+Route::get('/display/{token}', [BoardController::class, 'show'])->name('display');
+Route::get('/display/{token}/state', [BoardController::class, 'state'])->name('display.state');
+
+Route::prefix('team')->name('team.')->group(function () {
+    Route::middleware('guest')->group(function () {
+        Route::get('/login', [LoginController::class, 'show'])->name('login');
+        Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:6,1');
+    });
+
+    Route::middleware('auth')->group(function () {
+        Route::post('/logout', [LoginController::class, 'destroy'])->name('logout');
+        Route::redirect('/', '/team/queue');
+        Route::get('/queue', [QueueController::class, 'show'])->name('queue');
+        Route::get('/queue/state', [QueueController::class, 'state'])->name('queue.state');
+        Route::post('/orders/{order:id}/advance', [QueueController::class, 'advance'])->name('orders.advance');
+        Route::post('/orders/{order:id}/undo', [QueueController::class, 'undo'])->name('orders.undo');
+    });
+});
 
 Route::post('/webhooks/stripe', StripeWebhookController::class)->name('webhooks.stripe');

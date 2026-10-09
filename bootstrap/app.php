@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->validateCsrfTokens(except: ['webhooks/*']);
+        $middleware->redirectGuestsTo(fn () => route('team.login'));
+        $middleware->redirectUsersTo(fn () => route('team.queue'));
         $middleware->web(append: [
             SetLocale::class,
             HandleInertiaRequests::class,

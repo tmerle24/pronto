@@ -3,16 +3,21 @@ import GuestLayout from '@/Layouts/GuestLayout.vue';
 import OrderSummary from '@/Components/OrderSummary.vue';
 import { t } from '@/lib/i18n';
 import { euro } from '@/lib/money';
-import { Head, Link, router } from '@inertiajs/vue3';
-import { computed, onMounted, onUnmounted } from 'vue';
+import { connected, useEcho } from '@/lib/echo';
+import { Head, Link, router, usePage } from '@inertiajs/vue3';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
 
 const props = defineProps({
     order: Object,
     event: Object,
 });
 
-const finished = computed(() => ['picked_up', 'cancelled'].includes(props.order.status));
-const awaitingPayment = computed(() => !props.order.queued && props.order.status !== 'cancelled');
+// live copy, replaced by websocket pushes and polling
+const live = ref(props.order);
+const order = computed(() => live.value);
+
+const finished = computed(() => ['picked_up', 'cancelled'].includes(order.value.status));
+const awaitingPayment = computed(() => !order.value.queued && order.value.status !== 'cancelled');
 
 const statusText = computed(() => ({
     new: t('Bestellung ist angekommen'),
@@ -20,13 +25,17 @@ const statusText = computed(() => ({
     ready: t('Pronto! Deine Pizza ist fertig.'),
     picked_up: t('Buon appetito!'),
     cancelled: t('Bestellung storniert'),
-})[props.order.status]);
+})[order.value.status]);
 
-// fallback until realtime (milestone 3): poll every 10 s
+// websocket first; polling every 10 s while it is not connected
 let timer = null;
 onMounted(() => {
+    useEcho(usePage().props.realtime)
+        ?.channel(`order.${props.order.token}`)
+        .listen('.order.updated', (e) => (live.value = e.order));
     timer = setInterval(() => {
-        if (!finished.value) router.reload({ only: ['order'] });
+        if (finished.value || connected.value) return;
+        router.reload({ only: ['order'], onSuccess: (page) => (live.value = page.props.order) });
     }, 10000);
 });
 onUnmounted(() => clearInterval(timer));

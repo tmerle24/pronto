@@ -44,6 +44,13 @@ class HandleInertiaRequests extends Middleware
                 'legal' => config('brand.legal'),
             ],
             'locale' => fn () => app()->getLocale(),
+            // public websocket settings, read at runtime so one build fits every host
+            'realtime' => fn () => config('broadcasting.default') === 'reverb' ? [
+                'key' => config('broadcasting.connections.reverb.key'),
+                'host' => config('pronto.realtime.host'),
+                'port' => config('pronto.realtime.port'),
+                'scheme' => config('pronto.realtime.scheme'),
+            ] : null,
             // German strings are the keys; only other locales need a dictionary
             'translations' => fn () => $this->translations(app()->getLocale()),
             'auth' => fn () => [

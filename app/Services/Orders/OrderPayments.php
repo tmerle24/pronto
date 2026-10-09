@@ -5,6 +5,7 @@ namespace App\Services\Orders;
 use App\Enums\OrderEventType;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
+use App\Events\OrderPaymentChanged;
 use App\Models\Order;
 use App\Models\User;
 use App\Services\Payments\PaymentGateway;
@@ -30,7 +31,7 @@ class OrderPayments
 
     public function markPaid(Order $order, ?User $user = null, string $via = 'manual'): Order
     {
-        return DB::transaction(function () use ($order, $user, $via): Order {
+        $paid = DB::transaction(function () use ($order, $user, $via): Order {
             /** @var Order $locked */
             $locked = Order::query()->lockForUpdate()->findOrFail($order->id);
             if ($locked->payment_status === PaymentStatus::Paid) {
@@ -60,6 +61,10 @@ class OrderPayments
 
             return $locked;
         });
+
+        OrderPaymentChanged::dispatch($paid);
+
+        return $paid;
     }
 
     /** Online order not paid within the time limit. */
@@ -85,6 +90,10 @@ class OrderPayments
 
             return true;
         });
+
+        if ($expired) {
+            OrderPaymentChanged::dispatch($order->refresh());
+        }
 
         if ($expired && $order->stripe_payment_intent_id !== null) {
             try {
