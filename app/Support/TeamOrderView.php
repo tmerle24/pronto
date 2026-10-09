@@ -13,6 +13,8 @@ final class TeamOrderView
      */
     public static function make(Order $order): array
     {
+        $order->loadMissing('items.menuItem');
+
         return [
             'id' => $order->id,
             'number' => $order->pickup_number,
@@ -30,6 +32,7 @@ final class TeamOrderView
                 'quantity' => $item->quantity,
                 'name' => $item->name,
                 'variant' => $item->variant?->value,
+                'icon' => $item->menuItem?->icon,
             ])->all(),
         ];
     }

@@ -9,13 +9,13 @@ defineProps({
 </script>
 
 <template>
-    <span v-if="icon" class="relative inline-block shrink-0" aria-hidden="true">
-        <img :src="`/illustrations/${icon}.svg`" alt="" class="block h-full w-auto" :class="{ 'opacity-25': variant === 'slice' }" />
+    <span v-if="icon" class="relative inline-block max-w-full shrink-0" aria-hidden="true">
+        <img :src="`/illustrations/${icon}.svg`" alt="" class="block h-full w-auto max-w-full object-contain" :class="{ 'opacity-25': variant === 'slice' }" />
         <img
             v-if="variant === 'slice'"
             :src="`/illustrations/${icon}.svg`"
             alt=""
-            class="absolute inset-0 h-full w-full"
+            class="absolute inset-0 h-full w-full object-contain"
             style="clip-path: polygon(50% 50%, 100% 0%, 100% 100%)"
         />
     </span>

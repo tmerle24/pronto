@@ -1,5 +1,6 @@
 <script setup>
 import IntakeControls from '@/Components/IntakeControls.vue';
+import MenuIcon from '@/Components/MenuIcon.vue';
 import TeamNav from '@/Components/TeamNav.vue';
 import Wordmark from '@/Components/Wordmark.vue';
 import { registerServiceWorker } from '@/lib/push';
@@ -279,7 +280,11 @@ const live = computed(() => connected.value && !outbox.offline.value);
                             </div>
                             <ul class="mt-2 text-lg leading-snug">
                                 <!-- "2 ×" with a narrow no-break space; tabular digits keep names aligned -->
-                                <li v-for="(item, i) in order.items" :key="i" class="flex gap-1.5">
+                                <li v-for="(item, i) in order.items" :key="i" class="flex items-center gap-1.5">
+                                    <!-- fixed slot: narrow cans and wide flammkuchen keep quantities aligned -->
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center">
+                                        <MenuIcon :icon="item.icon" :variant="item.variant" class="h-6" />
+                                    </span>
                                     <span class="shrink-0 font-extrabold tabular-nums">{{ item.quantity }}&#8239;×</span>
                                     <span class="font-semibold">
                                         {{ item.name }}
@@ -295,7 +300,7 @@ const live = computed(() => connected.value && !outbox.offline.value);
                         </div>
                         <button
                             type="button"
-                            class="flex w-40 shrink-0 items-center justify-center px-2 text-center text-xl leading-tight font-extrabold uppercase"
+                            class="flex w-32 shrink-0 items-center justify-center px-2 text-center text-xl leading-tight font-extrabold uppercase"
                             :class="actionFor(order).tone"
                             @click="advance(order)"
                         >
