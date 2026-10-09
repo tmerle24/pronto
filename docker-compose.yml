@@ -1,0 +1,23 @@
+# Local only: Postgres for development. Production runs natively on the VPS.
+services:
+    pgsql:
+        image: postgres:16-alpine
+        container_name: pronto-pgsql
+        restart: unless-stopped
+        ports:
+            - '5447:5432'
+        environment:
+            POSTGRES_DB: '${DB_DATABASE:-pronto}'
+            POSTGRES_USER: '${DB_USERNAME:-pronto}'
+            POSTGRES_PASSWORD: '${DB_PASSWORD:-pronto}'
+        volumes:
+            - pronto-pgsql-data:/var/lib/postgresql/data
+        healthcheck:
+            test: ['CMD', 'pg_isready', '-U', '${DB_USERNAME:-pronto}', '-d', '${DB_DATABASE:-pronto}']
+            interval: 5s
+            timeout: 5s
+            retries: 5
+
+volumes:
+    pronto-pgsql-data:
+        driver: local
