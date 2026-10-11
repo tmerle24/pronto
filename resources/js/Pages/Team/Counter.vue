@@ -46,6 +46,7 @@ watch(() => lines.value.length, (n) => {
     if (n === 0) kitchenChoice.value = null;
 });
 
+const listOpen = ref(false);
 const form = useForm({ lines: [], payment_method: 'cash', handed_over: false });
 function submit(method) {
     form.lines = lines.value.map(({ id, quantity }) => ({ id, quantity }));
@@ -56,6 +57,7 @@ function submit(method) {
         onSuccess: () => {
             clear();
             kitchenChoice.value = null;
+            listOpen.value = false;
         },
     });
 }
@@ -93,25 +95,26 @@ onMounted(() => {
 <template>
     <Head title="Cassa" />
     <div class="flex h-dvh flex-col bg-crema text-carbone select-none">
-        <header class="flex h-16 shrink-0 items-center gap-4 px-4">
-            <Wordmark class="text-2xl" />
+        <header class="flex h-16 shrink-0 items-center gap-3 px-3 md:gap-4 md:px-4">
+            <Wordmark class="hidden text-2xl sm:inline" />
             <TeamNav current="team.counter" />
-            <span class="truncate text-grigio">{{ event?.name }}</span>
+            <span class="hidden truncate text-grigio md:inline">{{ event?.name }}</span>
             <a :href="route('team.manual')" target="_blank" class="ml-auto grid h-12 place-items-center px-2 text-grigio underline">Hilfe</a>
         </header>
 
         <p v-if="!event" class="m-auto font-display text-3xl">Kein aktives Event.</p>
 
         <main v-else class="grid min-h-0 flex-1 gap-3 px-3 pb-3 md:grid-cols-[1fr_320px]">
-            <section class="min-h-0 overflow-y-auto">
+            <!-- phone: room below for the fixed pay panel -->
+            <section class="min-h-0 overflow-y-auto pb-72 md:pb-0">
                 <div v-for="group in groups" :key="group.title" class="mb-4">
                     <h2 class="label-caps mb-2 text-grigio">{{ group.title }}</h2>
-                    <div v-for="(row, r) in group.rows" :key="r" class="mb-3 grid grid-cols-3 gap-3">
+                    <div v-for="(row, r) in group.rows" :key="r" class="mb-2 grid grid-cols-1 gap-2 md:mb-3 md:grid-cols-3 md:gap-3">
                         <button
                             v-for="item in row"
                             :key="item.id"
                             type="button"
-                            class="relative flex min-h-24 items-center gap-3 rounded-card p-3 text-left"
+                            class="relative flex min-h-18 items-center gap-3 rounded-card p-3 text-left md:min-h-24"
                             :class="[
                                 soldOut.has(item.id) ? 'bg-crema-scuro text-grigio' : 'bg-raised',
                                 // in the cart: whole tile framed, readable from the corner of the eye
@@ -140,9 +143,23 @@ onMounted(() => {
                 </div>
             </section>
 
-            <aside class="flex min-h-0 flex-col rounded-card bg-raised p-4">
-                <h2 class="label-caps text-grigio">Bestellung</h2>
-                <ul class="mt-2 min-h-0 flex-1 divide-y divide-crema-scuro overflow-y-auto">
+            <!-- phone: fixed to the bottom, within thumb reach; tablet: right column -->
+            <aside
+                class="fixed inset-x-0 bottom-0 z-20 flex max-h-[85dvh] min-h-0 flex-col rounded-t-[22px] bg-raised p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(42,30,25,0.12)] md:static md:max-h-none md:rounded-card md:pb-4 md:shadow-none"
+            >
+                <h2 class="label-caps hidden text-grigio md:block">Bestellung</h2>
+                <!-- phone: list folded away, the pills on the tiles already show the order -->
+                <button
+                    v-if="lines.length"
+                    type="button"
+                    class="flex h-10 items-center justify-between font-semibold text-grigio md:hidden"
+                    :aria-expanded="listOpen"
+                    @click="listOpen = !listOpen"
+                >
+                    <span>Bestellung ({{ lines.reduce((n, l) => n + l.quantity, 0) }})</span>
+                    <span>{{ listOpen ? 'zuklappen' : 'ändern' }}</span>
+                </button>
+                <ul class="mt-2 min-h-0 flex-1 divide-y divide-crema-scuro overflow-y-auto md:block" :class="listOpen ? 'block' : 'hidden'">
                     <li v-for="line in lines" :key="line.id" class="flex items-center gap-2 py-2">
                         <span class="flex flex-1 gap-1.5 text-lg">
                             <span class="shrink-0 font-extrabold tabular-nums">{{ line.quantity }}&#8239;×</span>
@@ -150,9 +167,9 @@ onMounted(() => {
                         </span>
                         <button type="button" class="size-12 rounded-full bg-crema-scuro text-2xl font-bold" :aria-label="`${line.item.name} weniger`" @click="remove(line.id)">-</button>
                     </li>
-                    <li v-if="!lines.length" class="py-6 text-center text-grigio">Tippe links auf die Artikel.</li>
+                    <li v-if="!lines.length" class="py-6 text-center text-grigio">Tippe auf die Artikel.</li>
                 </ul>
-                <p class="mt-2 flex justify-between font-display text-3xl font-black">
+                <p class="flex justify-between font-display text-3xl font-black md:mt-2">
                     <span>Summe</span><span>{{ euro(total) }}</span>
                 </p>
                 <div class="mt-3 grid grid-cols-2 rounded-full bg-crema-scuro p-1" role="radiogroup" aria-label="Wohin geht die Bestellung?">
