@@ -69,7 +69,7 @@ const variantLabel = (v) => ({ whole: 'ganz', slice: 'Stück' })[v] ?? '';
     </div>
 
     <div v-if="panel" class="fixed inset-0 z-30 flex items-start justify-end bg-carbone/40 p-4" @click.self="panel = null">
-        <div class="mt-16 w-[420px] rounded-card bg-crema p-5 shadow-2xl">
+        <div class="mt-16 w-full max-w-[420px] rounded-card bg-crema p-5 shadow-2xl">
             <template v-if="panel === 'pause'">
                 <h2 class="font-display text-2xl font-bold">Ofen voll? Pause.</h2>
                 <p class="text-grigio">Gäste sehen "Kurze Pause", die Wartezeit steigt.</p>

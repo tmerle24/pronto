@@ -125,6 +125,13 @@ function undo() {
     });
 }
 
+// phone layout: column tabs, whole card advances
+const activeColumn = ref('new');
+const phone = window.matchMedia('(max-width: 767px)');
+function onCardTap(order) {
+    if (phone.matches) advance(order);
+}
+
 function showToast(action) {
     clearTimeout(toastTimer);
     toast.value = action;
@@ -231,8 +238,8 @@ const live = computed(() => connected.value && !outbox.offline.value);
 <template>
     <Head title="Cucina" />
     <div class="flex h-dvh flex-col bg-crema text-carbone select-none">
-        <header class="flex h-16 shrink-0 items-center gap-4 px-4">
-            <Wordmark class="text-2xl" />
+        <header class="flex shrink-0 flex-wrap items-center gap-2 px-3 py-2 md:h-16 md:flex-nowrap md:gap-4 md:px-4 md:py-0">
+            <Wordmark class="hidden text-2xl sm:inline" />
             <TeamNav current="team.queue" />
             <span class="ml-auto"></span>
             <IntakeControls
@@ -244,7 +251,7 @@ const live = computed(() => connected.value && !outbox.offline.value);
                 @update:status="setStatus"
                 @error="showNotice"
             />
-            <span v-if="wait" class="rounded-full bg-raised px-4 py-2 text-lg">
+            <span v-if="wait" class="hidden rounded-full bg-raised px-4 py-2 text-lg md:inline">
                 <span class="label-caps text-grigio">Wartezeit</span>
                 <strong class="ml-2">{{ wait.low }}-{{ wait.high }} Min</strong>
             </span>
@@ -257,15 +264,35 @@ const live = computed(() => connected.value && !outbox.offline.value);
                 <span class="size-3 rounded-full" :class="live ? 'bg-basilico' : 'bg-grigio'"></span>
                 {{ live ? 'Live' : 'Verbinde...' }}
             </span>
-            <a :href="route('team.manual')" target="_blank" class="grid h-12 place-items-center px-2 text-grigio underline">Hilfe</a>
-            <button type="button" class="h-12 px-3 text-grigio underline" @click="router.post(route('team.logout'))">Abmelden</button>
+            <a :href="route('team.manual')" target="_blank" class="hidden h-12 place-items-center px-2 text-grigio underline md:grid">Hilfe</a>
+            <button type="button" class="hidden h-12 px-3 text-grigio underline md:inline" @click="router.post(route('team.logout'))">Abmelden</button>
         </header>
+
+        <!-- phone (emergency use): one column at a time, switched by tabs with colour and count -->
+        <nav v-if="event" class="grid shrink-0 grid-cols-3 gap-2 px-3 pb-2 md:hidden">
+            <button
+                v-for="column in columns"
+                :key="column.status"
+                type="button"
+                class="flex h-16 flex-col items-center justify-center rounded-card leading-none"
+                :class="activeColumn === column.status ? column.tone : 'bg-raised text-carbone'"
+                @click="activeColumn = column.status"
+            >
+                <span class="font-display text-2xl font-black tabular-nums">{{ column.orders.length }}</span>
+                <span class="label-caps mt-1 text-[11px]">{{ column.label }}</span>
+            </button>
+        </nav>
 
         <p v-if="!event" class="m-auto font-display text-3xl">Kein aktives Event.</p>
 
-        <main v-else class="grid min-h-0 flex-1 grid-cols-3 gap-3 px-3 pb-3">
-            <section v-for="column in columns" :key="column.status" class="flex min-h-0 flex-col rounded-card bg-crema-scuro">
-                <h2 class="flex items-center justify-between rounded-t-card px-4 py-3" :class="column.tone">
+        <main v-else class="grid min-h-0 flex-1 grid-cols-1 gap-3 px-3 pb-3 md:grid-cols-3">
+            <section
+                v-for="column in columns"
+                :key="column.status"
+                class="min-h-0 flex-col rounded-card bg-crema-scuro md:flex"
+                :class="activeColumn === column.status ? 'flex' : 'hidden'"
+            >
+                <h2 class="hidden items-center justify-between rounded-t-card px-4 py-3 md:flex" :class="column.tone">
                     <span class="label-caps text-base">{{ column.label }}</span>
                     <span class="font-display text-2xl font-black">{{ column.orders.length }}</span>
                 </h2>
@@ -275,6 +302,7 @@ const live = computed(() => connected.value && !outbox.offline.value);
                         :key="order.id"
                         class="flex overflow-hidden rounded-card bg-raised transition-shadow"
                         :class="{ 'ring-8 ring-oro animate-pulse': flashing.has(order.id) }"
+                        @click="onCardTap(order)"
                     >
                         <div class="min-w-0 flex-1 py-3 pr-2 pl-3">
                             <div class="flex items-start justify-between gap-2">
@@ -307,12 +335,18 @@ const live = computed(() => connected.value && !outbox.offline.value);
                                 <span v-if="order.cash_open" class="whitespace-nowrap"> · Bar {{ euro(order.total_cents) }}</span>
                                 <span v-if="order.status === 'ready' && order.customer_notified_at" class="whitespace-nowrap"> · Gast benachrichtigt</span>
                             </p>
+                            <!-- phone: the whole card is the button, this shows what a tap does -->
+                            <p class="mt-3 flex md:hidden">
+                                <span class="ml-auto rounded-full px-4 py-2 text-sm font-extrabold uppercase" :class="actionFor(order).tone">
+                                    {{ actionFor(order).label }} →
+                                </span>
+                            </p>
                         </div>
                         <button
                             type="button"
-                            class="flex w-38 shrink-0 items-center justify-center px-2 text-center text-xl leading-tight font-extrabold uppercase"
+                            class="hidden w-38 shrink-0 items-center justify-center px-2 text-center text-xl leading-tight font-extrabold uppercase md:flex"
                             :class="actionFor(order).tone"
-                            @click="advance(order)"
+                            @click.stop="advance(order)"
                         >
                             {{ actionFor(order).label }}
                         </button>
@@ -322,9 +356,9 @@ const live = computed(() => connected.value && !outbox.offline.value);
         </main>
 
         <div v-if="toast" class="fixed inset-x-0 bottom-4 z-20 flex justify-center px-4">
-            <div class="flex items-center gap-4 rounded-full bg-carbone py-2 pr-2 pl-6 text-lg text-crema shadow-2xl">
+            <div class="flex items-center gap-3 rounded-full bg-carbone py-2 pr-2 pl-5 text-base text-crema shadow-2xl md:gap-4 md:pl-6 md:text-lg">
                 <span>{{ toast.text }}</span>
-                <button type="button" class="h-[76px] rounded-full bg-crema px-8 text-xl font-extrabold text-carbone" @click="undo">
+                <button type="button" class="h-16 rounded-full bg-crema px-6 text-lg font-extrabold text-carbone md:h-[76px] md:px-8 md:text-xl" @click="undo">
                     Rückgängig
                 </button>
             </div>
