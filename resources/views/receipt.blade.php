@@ -37,13 +37,13 @@
         <tr><th>Menge</th><th>Artikel</th><th class="r">MwSt.</th><th class="r">Betrag</th></tr>
         @foreach ($r['lines'] as $line)
             <tr>
-                <td>{{ $line['quantity'] }}×</td>
-                <td>{{ $line['name'] }}@if ($line['deposit_cents']) <span class="muted">(inkl. {{ number_format($line['deposit_cents'] / 100, 2, ',', '.') }} € Pfand)</span>@endif</td>
+                <td>{{ $line['quantity'] }}&#8239;×</td>
+                <td>{{ $line['name'] }}@if ($line['deposit_cents']) <span class="muted">(inkl. {{ number_format($line['deposit_cents'] / 100, 2, ',', '.') }}&nbsp;€ Pfand)</span>@endif</td>
                 <td class="r">{{ rtrim(rtrim(number_format($line['vat_rate'], 2, ',', ''), '0'), ',') }} %</td>
-                <td class="r">{{ number_format($line['total_cents'] / 100, 2, ',', '.') }} €</td>
+                <td class="r">{{ number_format($line['total_cents'] / 100, 2, ',', '.') }}&nbsp;€</td>
             </tr>
         @endforeach
-        <tr class="total"><td></td><td>Summe</td><td></td><td class="r">{{ number_format($r['total_cents'] / 100, 2, ',', '.') }} €</td></tr>
+        <tr class="total"><td></td><td>Summe</td><td></td><td class="r">{{ number_format($r['total_cents'] / 100, 2, ',', '.') }}&nbsp;€</td></tr>
     </table>
 
     <table>
@@ -51,9 +51,9 @@
         @foreach ($r['vat'] as $g)
             <tr>
                 <td>{{ rtrim(rtrim(number_format($g['rate'], 2, ',', ''), '0'), ',') }} %</td>
-                <td class="r">{{ number_format($g['net_cents'] / 100, 2, ',', '.') }} €</td>
-                <td class="r">{{ number_format($g['vat_cents'] / 100, 2, ',', '.') }} €</td>
-                <td class="r">{{ number_format($g['gross_cents'] / 100, 2, ',', '.') }} €</td>
+                <td class="r">{{ number_format($g['net_cents'] / 100, 2, ',', '.') }}&nbsp;€</td>
+                <td class="r">{{ number_format($g['vat_cents'] / 100, 2, ',', '.') }}&nbsp;€</td>
+                <td class="r">{{ number_format($g['gross_cents'] / 100, 2, ',', '.') }}&nbsp;€</td>
             </tr>
         @endforeach
     </table>

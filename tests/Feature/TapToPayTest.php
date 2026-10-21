@@ -79,7 +79,7 @@ class TapToPayTest extends TestCase
 
         $this->postJson("/team/counter/tap/{$order->id}/complete")
             ->assertOk()
-            ->assertJsonPath('placed', ['number' => 1, 'total_cents' => 1900, 'payment_method' => 'tap_to_pay']);
+            ->assertJsonPath('placed', ['number' => 1, 'handed_over' => false, 'total_cents' => 1900, 'payment_method' => 'tap_to_pay']);
 
         $order->refresh();
         $this->assertSame(PaymentStatus::Paid, $order->payment_status);
@@ -89,6 +89,37 @@ class TapToPayTest extends TestCase
         // repeated report (e.g. retry after a network drop) keeps the number
         $this->postJson("/team/counter/tap/{$order->id}/complete")->assertJsonPath('placed.number', 1);
         $this->assertSame(1, $order->events()->where('type', 'payment_changed')->count());
+    }
+
+    public function test_handed_over_sale_skips_the_queue_after_the_tap(): void
+    {
+        $this->actingAs($this->staff)
+            ->postJson('/team/counter/tap', ['lines' => [['id' => $this->pizza->id, 'quantity' => 1]], 'handed_over' => true])
+            ->assertOk();
+        $order = Order::query()->sole();
+        $this->tap($order);
+
+        $this->postJson("/team/counter/tap/{$order->id}/complete")
+            ->assertOk()
+            ->assertJsonPath('placed.handed_over', true)
+            ->assertJsonPath('placed.number', null);
+
+        $this->assertSame(OrderStatus::PickedUp, $order->refresh()->status);
+        $this->assertSame(PaymentStatus::Paid, $order->payment_status);
+    }
+
+    public function test_webhook_keeps_the_hand_over_choice(): void
+    {
+        $this->actingAs($this->staff)
+            ->postJson('/team/counter/tap', ['lines' => [['id' => $this->pizza->id, 'quantity' => 1]], 'handed_over' => true]);
+        $order = Order::query()->sole();
+
+        $payload = (string) json_encode(['id' => 'evt_tap_ho', 'type' => WebhookEvent::PAYMENT_SUCCEEDED, 'data' => ['object' => ['id' => $order->stripe_payment_intent_id]]]);
+        $this->call('POST', '/webhooks/stripe', [], [], [], ['HTTP_STRIPE_SIGNATURE' => 'fake-signature', 'CONTENT_TYPE' => 'application/json'], $payload)->assertOk();
+
+        $order->refresh();
+        $this->assertSame(OrderStatus::PickedUp, $order->status);
+        $this->assertNull($order->pickup_number);
     }
 
     public function test_complete_without_successful_tap_is_rejected(): void

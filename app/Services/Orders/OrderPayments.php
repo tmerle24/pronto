@@ -28,7 +28,7 @@ class OrderPayments
             return $order;
         }
 
-        return $this->queue->release($order);
+        return $order->payment_method === PaymentMethod::TapToPay ? $this->queue->finishPaid($order) : $this->queue->release($order);
     }
 
     public function markPaid(Order $order, ?User $user = null, string $via = 'manual'): Order

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="12.5 6 150.5 101.5" width="150.5" height="101.5"><title>flammkuchen-klassiker</title><defs><radialGradient id="crust" cx="50%" cy="45%" r="55%">
+      <stop offset="78%" stop-color="#E9B66B"/><stop offset="92%" stop-color="#C98A3D"/><stop offset="100%" stop-color="#8F5A26"/>
+    </radialGradient><symbol id="leaf" viewBox="0 0 40 24"><path d="M2 12 C10 0 30 0 38 12 C30 24 10 24 2 12Z" fill="#2F6B3B"/><path d="M4 12 H34" stroke="#4E8C5A" stroke-width="1.4" fill="none"/></symbol><symbol id="fk-base" viewBox="0 0 200 140">
+      <path d="M14 30 Q10 12 34 10 L168 8 Q192 10 188 34 L190 106 Q190 130 166 130 L36 132 Q10 130 12 108Z" fill="url(#crust)"/>
+      <path d="M26 34 Q24 22 40 22 L162 20 Q178 22 176 38 L178 102 Q178 118 162 118 L42 120 Q24 118 26 104Z" fill="#FFF3DC"/>
+      <g fill="#E9C98E" opacity=".7"><circle cx="50" cy="40" r="6"/><circle cx="150" cy="100" r="7"/><circle cx="120" cy="36" r="5"/><circle cx="64" cy="104" r="6"/></g>
+    </symbol></defs>
+      <use href="#fk-base"/>
+      <g fill="#A8432F"><rect x="44" y="50" width="14" height="8" rx="2"/><rect x="88" y="36" width="14" height="8" rx="2" transform="rotate(20 95 40)"/><rect x="132" y="56" width="14" height="8" rx="2"/><rect x="70" y="86" width="14" height="8" rx="2" transform="rotate(-15 77 90)"/><rect x="116" y="92" width="14" height="8" rx="2"/><rect x="150" y="80" width="12" height="7" rx="2"/><rect x="48" y="96" width="12" height="7" rx="2"/></g>
+      <g fill="none" stroke="#6E9B4E" stroke-width="3" stroke-linecap="round"><path d="M64 44 l8 4"/><path d="M110 60 l9 -3"/><path d="M140 40 l6 6"/><path d="M96 98 l8 2"/><path d="M58 72 l7 -4"/><path d="M150 104 l6 -4"/></g>
+      <g fill="none" stroke="#E7CFA6" stroke-width="2.4"><path d="M100 70 a8 6 0 0 1 16 0"/><path d="M40 70 a7 5 0 0 1 14 0"/><path d="M140 70 a7 5 0 0 1 14 0"/></g>
+    </svg>

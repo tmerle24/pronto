@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $vat_rate_bp
  * @property string $unit_oven_units
  * @property int $quantity
+ * @property-read ?MenuItem $menuItem
  */
 #[Fillable([
     'menu_item_id', 'name', 'variant', 'unit_price_cents', 'unit_deposit_cents',
@@ -44,6 +45,12 @@ class OrderItem extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order::class);
+    }
+
+    /** @return BelongsTo<MenuItem, $this> */
+    public function menuItem(): BelongsTo
+    {
+        return $this->belongsTo(MenuItem::class);
     }
 
     public function lineTotalCents(): int

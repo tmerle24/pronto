@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="55 21 90 169" width="90" height="169"><title>cola</title>
+  <ellipse cx="100" cy="182" rx="44" ry="7" fill="#2A1E19" opacity=".12"/>
+  <path d="M62 38 Q62 28 72 26 L128 26 Q138 28 138 38 L140 168 Q140 180 128 181 L72 181 Q60 180 60 168 Z" fill="#B8202B"/>
+  <path d="M62 38 Q62 28 72 26 L128 26 Q138 28 138 38 L138.4 46 L61.6 46 Z" fill="#C9CDD1"/>
+  <path d="M60.2 160 L139.8 160 L140 168 Q140 180 128 181 L72 181 Q60 180 60 168 Z" fill="#C9CDD1"/>
+  <ellipse cx="100" cy="27" rx="33" ry="5" fill="#E3E6E9"/>
+  <rect x="92" y="23" width="16" height="5" rx="2.5" fill="#9AA0A6"/>
+  <path d="M61 92 Q100 74 139 92 L139 112 Q100 94 61 112 Z" fill="#FBF4E6"/>
+  <path d="M76 52 L76 152" stroke="#FFFFFF" stroke-width="7" stroke-linecap="round" opacity=".22"/>
+</svg>

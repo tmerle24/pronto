@@ -29,10 +29,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property bool $is_sold_out
  * @property bool $is_available
  * @property int $sort
+ * @property ?string $icon
  */
 #[Fillable([
     'name', 'description', 'name_en', 'description_en', 'category', 'edition', 'variant', 'price_cents', 'deposit_cents',
-    'vat_rate_bp', 'allergens', 'additives', 'oven_units', 'is_sold_out', 'is_available', 'sort',
+    'vat_rate_bp', 'allergens', 'additives', 'oven_units', 'is_sold_out', 'is_available', 'sort', 'icon',
 ])]
 class MenuItem extends Model
 {
@@ -73,6 +74,16 @@ class MenuItem extends Model
             ->orderBy('sort')
             ->orderBy('id');
     }
+
+    /** Pictures in public/illustrations. */
+    public const ICONS = [
+        'margherita' => 'Pizza Margherita',
+        'salami' => 'Pizza Salami',
+        'flammkuchen-klassiker' => 'Flammkuchen Klassiker',
+        'flammkuchen-vegetarisch' => 'Flammkuchen Vegetarisch',
+        'cola' => 'Cola (Dose)',
+        'wasser' => 'Wasser (Flasche)',
+    ];
 
     public function isOrderable(): bool
     {

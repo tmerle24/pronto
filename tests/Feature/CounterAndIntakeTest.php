@@ -4,12 +4,15 @@ namespace Tests\Feature;
 
 use App\Broadcasting\WaitTimesUpdated;
 use App\Enums\OrderSource;
+use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Events\OrderQueued;
 use App\Models\Event;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\Reports\DailyReport;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Event as EventFacade;
 use Tests\TestCase;
@@ -48,7 +51,7 @@ class CounterAndIntakeTest extends TestCase
     {
         $this->actingAs($this->staff)
             ->post('/team/counter', $this->counterOrder('cash'))
-            ->assertSessionHas('placed', ['number' => 1, 'total_cents' => 1900, 'payment_method' => 'cash']);
+            ->assertSessionHas('placed', ['number' => 1, 'handed_over' => false, 'total_cents' => 1900, 'payment_method' => 'cash']);
 
         $order = Order::query()->sole();
         $this->assertSame(OrderSource::Counter, $order->source);
@@ -123,5 +126,46 @@ class CounterAndIntakeTest extends TestCase
 
         $this->assertSame([$this->pizza->id], $payload['status']['sold_out']);
         $this->assertTrue($payload['status']['open']);
+    }
+
+    public function test_counter_sale_handed_over_skips_queue_but_counts(): void
+    {
+        EventFacade::fake([OrderQueued::class]);
+        $slice = MenuItem::factory()->slice()->create();
+        $cola = MenuItem::factory()->drink()->create();
+
+        $this->actingAs($this->staff)->post('/team/counter', [
+            'lines' => [['id' => $slice->id, 'quantity' => 1], ['id' => $cola->id, 'quantity' => 1]],
+            'payment_method' => 'cash',
+            'handed_over' => true,
+        ])->assertSessionHas('placed', fn ($p) => $p['handed_over'] === true && $p['number'] === null);
+
+        $order = Order::query()->sole();
+        $this->assertSame(OrderStatus::PickedUp, $order->status);
+        $this->assertSame(PaymentStatus::Paid, $order->payment_status);
+        $this->assertNotNull($order->receipt_number);
+        $this->assertNull($order->pickup_number);
+        $this->assertSame(0, $this->event->refresh()->last_pickup_number);
+        EventFacade::assertNotDispatched(OrderQueued::class);
+
+        $this->get('/team/queue/state')->assertJsonCount(0, 'orders');
+        $this->get("/display/{$this->event->display_token}/state")->assertJsonPath('board', ['in_oven' => [], 'ready' => []]);
+        $this->assertSame(1, (new DailyReport($this->event, today()->toImmutable()))->summary()['orders']);
+    }
+
+    public function test_counter_sale_to_kitchen_gets_a_number(): void
+    {
+        $this->actingAs($this->staff)->post('/team/counter', $this->counterOrder('cash') + ['handed_over' => false]);
+
+        $order = Order::query()->sole();
+        $this->assertSame(1, $order->pickup_number);
+        $this->assertSame(OrderStatus::New, $order->status);
+    }
+
+    public function test_guests_cannot_skip_the_queue(): void
+    {
+        $this->post("/e/{$this->event->slug}/orders", $this->counterOrder('cash') + ['handed_over' => true]);
+
+        $this->assertSame(OrderStatus::New, Order::query()->sole()->status);
     }
 }

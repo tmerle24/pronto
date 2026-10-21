@@ -3,9 +3,11 @@
 namespace App\Services\Orders;
 
 use App\Enums\OrderEventType;
+use App\Enums\OrderStatus;
 use App\Events\OrderQueued;
 use App\Models\Event;
 use App\Models\Order;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -46,5 +48,50 @@ class OrderQueue
         OrderQueued::dispatch($released);
 
         return $released;
+    }
+
+    /**
+     * Paid later than placed (Tap to Pay): hand over or queue, as chosen at the counter.
+     */
+    public function finishPaid(Order $order, ?User $user = null): Order
+    {
+        $handedOver = $order->events()
+            ->where('type', OrderEventType::Created)
+            ->first()?->meta['handed_over'] ?? false;
+
+        return $handedOver ? $this->handOver($order, $user) : $this->release($order);
+    }
+
+    /**
+     * Counter sale handed over the counter right away (slice, drink): done at
+     * once, no pickup number, never shown in queue or display, but counted in
+     * reports and receipts like any other order.
+     */
+    public function handOver(Order $order, ?User $user = null): Order
+    {
+        return DB::transaction(function () use ($order, $user): Order {
+            /** @var Order $locked */
+            $locked = Order::query()->lockForUpdate()->findOrFail($order->id);
+            if ($locked->isQueued()) {
+                return $locked;
+            }
+
+            $from = $locked->status;
+            $locked->queued_at = now();
+            $locked->status = OrderStatus::PickedUp;
+            $locked->picked_up_at = now();
+            $locked->save();
+
+            $locked->events()->create([
+                'type' => OrderEventType::StatusChanged,
+                'from' => $from->value,
+                'to' => OrderStatus::PickedUp->value,
+                'is_undo' => false,
+                'user_id' => $user?->id,
+                'meta' => ['handed_over' => true],
+            ]);
+
+            return $locked;
+        });
     }
 }

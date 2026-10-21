@@ -38,6 +38,7 @@ class TapToPayController extends Controller
             'lines' => ['required', 'array', 'min:1', 'max:30'],
             'lines.*.id' => ['required', 'integer'],
             'lines.*.quantity' => ['required', 'integer', 'min:1', 'max:'.PlaceOrder::MAX_QUANTITY_PER_LINE],
+            'handed_over' => ['boolean'],
         ]);
 
         $event = Event::current();
@@ -50,6 +51,7 @@ class TapToPayController extends Controller
                 $event,
                 array_map(fn (array $l) => new OrderLine((int) $l['id'], (int) $l['quantity']), array_values($data['lines'])),
                 $this->user($request),
+                (bool) ($data['handed_over'] ?? false),
             );
         } catch (OrderRejected $e) {
             return response()->json(['message' => $e->translated()], 422);
@@ -104,6 +106,7 @@ class TapToPayController extends Controller
     {
         return response()->json(['placed' => [
             'number' => $order->pickup_number,
+            'handed_over' => $order->pickup_number === null,
             'total_cents' => $order->total_cents,
             'payment_method' => $order->payment_method->value,
         ]]);

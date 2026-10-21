@@ -32,6 +32,7 @@ class CounterController extends Controller
                 'id' => $item->id,
                 'name' => $item->name,
                 'variant' => $item->variant?->value,
+                'icon' => $item->icon,
                 'edition' => $item->edition?->value,
                 'category' => $item->category->value,
                 'price_cents' => $item->price_cents,
@@ -51,6 +52,7 @@ class CounterController extends Controller
             'lines.*.id' => ['required', 'integer'],
             'lines.*.quantity' => ['required', 'integer', 'min:1', 'max:'.PlaceOrder::MAX_QUANTITY_PER_LINE],
             'payment_method' => ['required', Rule::in([PaymentMethod::Cash->value, PaymentMethod::CounterCard->value])],
+            'handed_over' => ['boolean'],
         ]);
 
         $event = Event::current();
@@ -69,6 +71,7 @@ class CounterController extends Controller
                 OrderSource::Counter,
                 'de',
                 $user,
+                (bool) ($data['handed_over'] ?? false),
             );
         } catch (OrderRejected $e) {
             return back()->withErrors(['order' => $e->translated()]);
@@ -76,6 +79,7 @@ class CounterController extends Controller
 
         return back()->with('placed', [
             'number' => $order->pickup_number,
+            'handed_over' => $order->pickup_number === null,
             'total_cents' => $order->total_cents,
             'payment_method' => $order->payment_method->value,
         ]);

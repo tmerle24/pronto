@@ -42,11 +42,13 @@ class PlaceOrder
         OrderSource $source = OrderSource::Qr,
         string $locale = 'de',
         ?User $user = null,
+        // counter only: handed over the counter right away, skips the queue
+        bool $handedOver = false,
     ): Order {
         $this->guard($event, $method, $source);
         $items = $this->resolveItems($event, $lines);
 
-        $order = DB::transaction(function () use ($event, $lines, $items, $method, $source, $locale, $user): Order {
+        $order = DB::transaction(function () use ($event, $lines, $items, $method, $source, $locale, $user, $handedOver): Order {
             $order = new Order([
                 'event_id' => $event->id,
                 'public_token' => Str::random(40),
@@ -85,7 +87,9 @@ class PlaceOrder
             $order->events()->create([
                 'type' => OrderEventType::Created,
                 'user_id' => $user?->id,
-                'meta' => ['method' => $method->value, 'source' => $source->value, 'total_cents' => $total],
+                // handed_over: read again when a later payment finishes the order (Tap to Pay)
+                'meta' => ['method' => $method->value, 'source' => $source->value, 'total_cents' => $total]
+                    + ($handedOver && $source === OrderSource::Counter ? ['handed_over' => true] : []),
             ]);
 
             return $order;
@@ -94,13 +98,20 @@ class PlaceOrder
         return match ($method) {
             PaymentMethod::Online => $this->startOnlinePayment($order),
             // at the counter cash is paid on the spot, from the QR page at pickup
-            PaymentMethod::Cash => $this->queue->release(
+            PaymentMethod::Cash => $this->finish(
                 $source === OrderSource::Counter ? $this->orderPayments->markPaid($order, $user, 'counter_cash') : $order,
+                $handedOver && $source === OrderSource::Counter,
+                $user,
             ),
-            PaymentMethod::CounterCard => $this->queue->release($this->orderPayments->markPaid($order, $user, 'counter_card')),
-            // queued once the tap went through (TapToPayCheckout::complete or webhook)
+            PaymentMethod::CounterCard => $this->finish($this->orderPayments->markPaid($order, $user, 'counter_card'), $handedOver, $user),
+            // finished once the tap went through (TapToPayCheckout::complete or webhook)
             PaymentMethod::TapToPay => $this->startTerminalPayment($order),
         };
+    }
+
+    private function finish(Order $order, bool $handedOver, ?User $user): Order
+    {
+        return $handedOver ? $this->queue->handOver($order, $user) : $this->queue->release($order);
     }
 
     private function guard(Event $event, PaymentMethod $method, OrderSource $source): void

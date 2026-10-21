@@ -22,6 +22,8 @@ class EventWaitTimesTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        // fixed noon: tests travel up to 80 min and only today's samples count
+        $this->travelTo(today()->setTime(12, 0));
         // 2 slots, 4 min per bake, 3 min buffer
         $this->event = Event::factory()->create();
     }

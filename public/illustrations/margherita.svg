@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="3 3 194 194" width="194" height="194"><title>pizza-margherita</title><defs><radialGradient id="crust" cx="50%" cy="45%" r="55%">
+      <stop offset="78%" stop-color="#E9B66B"/><stop offset="92%" stop-color="#C98A3D"/><stop offset="100%" stop-color="#8F5A26"/>
+    </radialGradient><symbol id="leaf" viewBox="0 0 40 24"><path d="M2 12 C10 0 30 0 38 12 C30 24 10 24 2 12Z" fill="#2F6B3B"/><path d="M4 12 H34" stroke="#4E8C5A" stroke-width="1.4" fill="none"/></symbol><symbol id="fk-base" viewBox="0 0 200 140">
+      <path d="M14 30 Q10 12 34 10 L168 8 Q192 10 188 34 L190 106 Q190 130 166 130 L36 132 Q10 130 12 108Z" fill="url(#crust)"/>
+      <path d="M26 34 Q24 22 40 22 L162 20 Q178 22 176 38 L178 102 Q178 118 162 118 L42 120 Q24 118 26 104Z" fill="#FFF3DC"/>
+      <g fill="#E9C98E" opacity=".7"><circle cx="50" cy="40" r="6"/><circle cx="150" cy="100" r="7"/><circle cx="120" cy="36" r="5"/><circle cx="64" cy="104" r="6"/></g>
+    </symbol></defs>
+      <circle cx="100" cy="100" r="96" fill="url(#crust)"/>
+      <circle cx="100" cy="100" r="80" fill="#C7362B"/>
+      <circle cx="100" cy="100" r="80" fill="none" stroke="#A82A20" stroke-width="3" opacity=".5"/>
+      <g fill="#FFF6E0">
+        <path d="M60 62 q14 -10 26 2 q6 14 -10 18 q-20 2 -16 -20z"/>
+        <path d="M118 52 q18 -4 22 12 q-2 14 -18 10 q-14 -6 -4 -22z"/>
+        <path d="M128 112 q18 -6 24 10 q0 16 -18 14 q-16 -6 -6 -24z"/>
+        <path d="M70 120 q16 -8 24 6 q4 16 -14 18 q-18 -2 -10 -24z"/>
+        <path d="M98 88 q12 -4 14 8 q-2 10 -12 8 q-10 -4 -2 -16z"/>
+        <path d="M100 150 q10 -6 16 4 q0 10 -12 10 q-10 -4 -4 -14z"/>
+      </g>
+      <g fill="#FFE9B8" opacity=".7">
+        <circle cx="72" cy="70" r="5"/><circle cx="130" cy="62" r="5"/><circle cx="140" cy="122" r="5"/><circle cx="82" cy="130" r="5"/>
+      </g>
+      <use href="#leaf" x="84" y="60" width="30" height="18" transform="rotate(-25 99 69)"/>
+      <use href="#leaf" x="46" y="94" width="26" height="16" transform="rotate(30 59 102)"/>
+      <use href="#leaf" x="120" y="88" width="28" height="17" transform="rotate(10 134 96)"/>
+      <use href="#leaf" x="108" y="134" width="26" height="16" transform="rotate(-40 121 142)"/>
+      <g stroke="#7A4A1E" stroke-width="1.6" opacity=".35">
+        <line x1="100" y1="4" x2="100" y2="196"/><line x1="4" y1="100" x2="196" y2="100"/>
+        <line x1="32" y1="32" x2="168" y2="168"/><line x1="168" y1="32" x2="32" y2="168"/>
+      </g>
+    </svg>

@@ -104,7 +104,7 @@ class QueueController extends Controller
         return array_values(Order::query()
             ->where('event_id', $event->id)
             ->inQueue()
-            ->with('items')
+            ->with('items.menuItem')
             ->get()
             ->map(fn (Order $order) => TeamOrderView::make($order))
             ->all());

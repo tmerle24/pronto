@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="3 3 194 194" width="194" height="194"><title>pizza-salami</title><defs><radialGradient id="crust" cx="50%" cy="45%" r="55%">
+      <stop offset="78%" stop-color="#E9B66B"/><stop offset="92%" stop-color="#C98A3D"/><stop offset="100%" stop-color="#8F5A26"/>
+    </radialGradient><symbol id="leaf" viewBox="0 0 40 24"><path d="M2 12 C10 0 30 0 38 12 C30 24 10 24 2 12Z" fill="#2F6B3B"/><path d="M4 12 H34" stroke="#4E8C5A" stroke-width="1.4" fill="none"/></symbol><symbol id="fk-base" viewBox="0 0 200 140">
+      <path d="M14 30 Q10 12 34 10 L168 8 Q192 10 188 34 L190 106 Q190 130 166 130 L36 132 Q10 130 12 108Z" fill="url(#crust)"/>
+      <path d="M26 34 Q24 22 40 22 L162 20 Q178 22 176 38 L178 102 Q178 118 162 118 L42 120 Q24 118 26 104Z" fill="#FFF3DC"/>
+      <g fill="#E9C98E" opacity=".7"><circle cx="50" cy="40" r="6"/><circle cx="150" cy="100" r="7"/><circle cx="120" cy="36" r="5"/><circle cx="64" cy="104" r="6"/></g>
+    </symbol></defs>
+      <circle cx="100" cy="100" r="96" fill="url(#crust)"/>
+      <circle cx="100" cy="100" r="80" fill="#C7362B"/>
+      <g fill="#FFF6E0" opacity=".9">
+        <path d="M58 92 q14 -8 22 4 q2 12 -12 12 q-14 -2 -10 -16z"/><path d="M122 140 q14 -6 20 6 q0 12 -14 10 q-12 -4 -6 -16z"/><path d="M110 70 q10 -4 14 6 q-2 10 -12 8 q-8 -4 -2 -14z"/>
+      </g>
+      <g fill="#8E1A22">
+        <circle cx="70" cy="60" r="15"/><circle cx="128" cy="56" r="15"/><circle cx="148" cy="100" r="15"/><circle cx="100" cy="102" r="15"/>
+        <circle cx="56" cy="128" r="15"/><circle cx="96" cy="146" r="15"/><circle cx="140" cy="146" r="11"/>
+      </g>
+      <g fill="#E8C4B0" opacity=".85">
+        <circle cx="66" cy="56" r="2"/><circle cx="74" cy="64" r="1.6"/><circle cx="124" cy="52" r="2"/><circle cx="132" cy="60" r="1.6"/><circle cx="144" cy="96" r="2"/><circle cx="152" cy="104" r="1.6"/>
+        <circle cx="96" cy="98" r="2"/><circle cx="104" cy="106" r="1.6"/><circle cx="52" cy="124" r="2"/><circle cx="60" cy="132" r="1.6"/><circle cx="92" cy="142" r="2"/><circle cx="100" cy="150" r="1.6"/>
+      </g>
+    </svg>

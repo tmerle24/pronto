@@ -1,5 +1,6 @@
 <script setup>
 import GuestLayout from '@/Layouts/GuestLayout.vue';
+import MenuIcon from '@/Components/MenuIcon.vue';
 import Stepper from '@/Components/Stepper.vue';
 import { useCart } from '@/lib/cart';
 import { t, variantLabel } from '@/lib/i18n';
@@ -104,20 +105,28 @@ function submit(method) {
                         class="flex items-center gap-3 rounded-card bg-raised p-4"
                         :class="{ 'opacity-60': soldOut.has(item.id) }"
                     >
-                        <div class="min-w-0 flex-1">
-                            <p class="font-display text-xl font-bold leading-tight">
-                                {{ item.name }}
-                                <span v-if="item.variant" class="font-sans text-base font-normal text-grigio">{{ variantLabel(item.variant) }}</span>
-                            </p>
-                            <p class="text-sm text-grigio">{{ item.description }}</p>
-                            <p class="mt-1 font-display text-lg font-bold">
-                                {{ euro(item.price_cents) }}
-                                <span v-if="item.deposit_cents" class="font-sans text-sm font-normal text-grigio">+ {{ euro(item.deposit_cents) }} {{ t('Pfand') }}</span>
-                            </p>
-                            <p v-if="soldOut.has(item.id)" class="label-caps mt-1 text-rosso">{{ t('Ausverkauft') }}</p>
-                            <p v-else-if="item.allergens || item.additives" class="mt-1 text-xs text-grigio">
-                                {{ t('Allergene und Zusatzstoffe') }}: {{ [item.allergens, item.additives].filter(Boolean).join(' · ') }}
-                            </p>
+                        <!-- picture | text: gap equals the card padding (16 px) -->
+                        <div class="flex min-w-0 flex-1 items-center gap-4">
+                            <!-- same size as the + button; fixed slot keeps names aligned across cards -->
+                            <span class="flex size-12 shrink-0 items-center justify-center">
+                                <MenuIcon :icon="item.icon" :variant="item.variant" class="h-12" />
+                            </span>
+                            <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
+                            <div class="-ml-0.5 min-w-0 flex-1">
+                                <p class="font-display text-xl leading-tight font-bold">
+                                    {{ item.name }}
+                                    <span v-if="item.variant" class="font-sans text-base font-normal text-grigio">{{ variantLabel(item.variant) }}</span>
+                                </p>
+                                <p class="text-sm text-grigio">{{ item.description }}</p>
+                                <p class="mt-1 font-display text-lg font-bold">
+                                    {{ euro(item.price_cents) }}
+                                    <span v-if="item.deposit_cents" class="font-sans text-sm font-normal text-grigio">+ {{ euro(item.deposit_cents) }} {{ t('Pfand') }}</span>
+                                </p>
+                                <p v-if="soldOut.has(item.id)" class="label-caps mt-1 text-rosso">{{ t('Ausverkauft') }}</p>
+                                <p v-else-if="item.allergens || item.additives" class="mt-1 text-xs text-grigio">
+                                    {{ t('Allergene und Zusatzstoffe') }}: {{ [item.allergens, item.additives].filter(Boolean).join(' · ') }}
+                                </p>
+                            </div>
                         </div>
                         <Stepper
                             :name="[item.name, variantLabel(item.variant)].filter(Boolean).join(' ')"

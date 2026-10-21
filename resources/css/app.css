@@ -61,3 +61,20 @@ body {
 .font-display {
     font-variant-numeric: lining-nums;
 }
+
+/* Tailwind 4 dropped the pointer cursor on buttons; on a desktop everything tappable should show it */
+@layer base {
+    button:not(:disabled),
+    [role='button']:not([aria-disabled='true']),
+    [role='radio'],
+    [role='tab'],
+    summary,
+    label:has(input[type='checkbox']),
+    select {
+        cursor: pointer;
+    }
+
+    button:disabled {
+        cursor: not-allowed;
+    }
+}

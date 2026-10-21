@@ -24,6 +24,6 @@ class TeamOrderUpdated implements ShouldBroadcastNow
     /** @return array<string, mixed> */
     public function broadcastWith(): array
     {
-        return ['order' => TeamOrderView::make($this->order->loadMissing('items'))];
+        return ['order' => TeamOrderView::make($this->order)];
     }
 }

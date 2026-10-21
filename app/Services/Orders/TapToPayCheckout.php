@@ -33,9 +33,9 @@ class TapToPayCheckout
     /**
      * @param  list<OrderLine>  $lines
      */
-    public function start(Event $event, array $lines, User $user): Order
+    public function start(Event $event, array $lines, User $user, bool $handedOver = false): Order
     {
-        return ($this->placeOrder)($event, $lines, PaymentMethod::TapToPay, OrderSource::Counter, 'de', $user);
+        return ($this->placeOrder)($event, $lines, PaymentMethod::TapToPay, OrderSource::Counter, 'de', $user, $handedOver);
     }
 
     public function clientSecret(Order $order): string
@@ -51,7 +51,7 @@ class TapToPayCheckout
     public function complete(Order $order, User $user): Order
     {
         if ($order->payment_status === PaymentStatus::Paid) {
-            return $this->queue->release($order);
+            return $this->queue->finishPaid($order, $user);
         }
 
         $payment = $this->terminal->status($order);
@@ -68,7 +68,7 @@ class TapToPayCheckout
             throw new TapToPayIncomplete('amount_mismatch');
         }
 
-        return $this->queue->release($this->payments->markPaid($order, $user, 'tap_to_pay'));
+        return $this->queue->finishPaid($this->payments->markPaid($order, $user, 'tap_to_pay'), $user);
     }
 
     /**
@@ -100,7 +100,7 @@ class TapToPayCheckout
             return $locked;
         });
 
-        return $this->queue->release($this->payments->markPaid($switched, $user, 'counter_cash'));
+        return $this->queue->finishPaid($this->payments->markPaid($switched, $user, 'counter_cash'), $user);
     }
 
     /**

@@ -28,6 +28,7 @@ class MenuController extends Controller
                 'category' => $item->category->value,
                 'edition' => $item->edition?->value,
                 'variant' => $item->variant?->value,
+                'icon' => $item->icon,
                 'price_cents' => $item->price_cents,
                 'deposit_cents' => $item->deposit_cents,
                 'allergens' => $item->allergens,

@@ -5,6 +5,7 @@ namespace App\Filament\Resources\MenuItems\Schemas;
 use App\Enums\ItemVariant;
 use App\Enums\MenuCategory;
 use App\Enums\MenuEdition;
+use App\Models\MenuItem;
 use App\Support\EnumOptions;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -30,6 +31,8 @@ class MenuItemForm
                         ->placeholder('Immer (z. B. Getränke)'),
                     Select::make('variant')->label('Variante')->options(EnumOptions::for(ItemVariant::class))->placeholder('keine'),
                     TextInput::make('sort')->label('Sortierung')->numeric()->default(100),
+                    Select::make('icon')->label('Bild')->options(MenuItem::ICONS)->placeholder('kein Bild')
+                        ->helperText('Bei Variante "Stück" zeigt die Karte automatisch ein Viertel.'),
                 ]),
                 Section::make('Preis')->columns(3)->schema([
                     TextInput::make('price_cents')->label('Preis (Cent)')->numeric()->minValue(0)->required()->helperText('950 = 9,50 €'),
