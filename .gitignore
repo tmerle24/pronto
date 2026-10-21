@@ -35,3 +35,7 @@ Thumbs.db
 /public/css/filament
 /public/js/filament
 /public/fonts/filament
+
+# Android signing key, only in CI secrets
+*.jks
+*.keystore
