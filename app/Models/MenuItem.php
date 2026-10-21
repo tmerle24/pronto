@@ -81,6 +81,7 @@ class MenuItem extends Model
         'salami' => 'Pizza Salami',
         'flammkuchen-klassiker' => 'Flammkuchen Klassiker',
         'flammkuchen-vegetarisch' => 'Flammkuchen Vegetarisch',
+        'flammkuchen-dessert' => 'Flammkuchen Apfel-Zimt',
         'cola' => 'Cola (Dose)',
         'wasser' => 'Wasser (Flasche)',
     ];

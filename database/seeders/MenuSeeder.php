@@ -9,7 +9,7 @@ use App\Models\MenuItem;
 use Illuminate\Database\Seeder;
 
 /**
- * Start menu, prices as on tiamo-pizza.de. Existing items are left untouched.
+ * Start menu. Existing items are left untouched.
  */
 class MenuSeeder extends Seeder
 {
@@ -22,18 +22,20 @@ class MenuSeeder extends Seeder
 
         // name, name_en, description, description_en, category, edition, variant, price, deposit, vat, allergens, additives, oven units
         $items = [
-            ['Margherita', null, 'Tomate, Mozzarella, Basilikum, Olivenöl', 'Tomato, mozzarella, basil, olive oil', MenuCategory::Pizza, $pizza, $whole, 950, 0, 700, 'A, G', null, '1.00'],
-            ['Margherita', null, 'Tomate, Mozzarella, Basilikum, Olivenöl', 'Tomato, mozzarella, basil, olive oil', MenuCategory::Pizza, $pizza, $slice, 350, 0, 700, 'A, G', null, '0.25'],
-            ['Salami', null, 'Tomate, Mozzarella, italienische Salami', 'Tomato, mozzarella, Italian salami', MenuCategory::Pizza, $pizza, $whole, 1050, 0, 700, 'A, G', '2, 3', '1.00'],
-            ['Salami', null, 'Tomate, Mozzarella, italienische Salami', 'Tomato, mozzarella, Italian salami', MenuCategory::Pizza, $pizza, $slice, 400, 0, 700, 'A, G', '2, 3', '0.25'],
-            ['Flammkuchen Klassiker', 'Flammkuchen classic', 'Crème fraîche, Speck, Lauch, Zwiebeln', 'Crème fraîche, bacon, leek, onions', MenuCategory::Flammkuchen, $flamm, null, 950, 0, 700, 'A, G', '2, 3', '1.00'],
-            ['Flammkuchen Vegetarisch', 'Flammkuchen vegetarian', 'Crème fraîche, Lauch, Champignons, Bergkäse', 'Crème fraîche, leek, mushrooms, mountain cheese', MenuCategory::Flammkuchen, $flamm, null, 900, 0, 700, 'A, G', null, '1.00'],
+            ['Margherita', null, 'Tomate, Mozzarella, Basilikum, Olivenöl', 'Tomato, mozzarella, basil, olive oil', MenuCategory::Pizza, $pizza, $whole, 900, 0, 700, 'A, G', null, '1.00'],
+            ['Margherita', null, 'Tomate, Mozzarella, Basilikum, Olivenöl', 'Tomato, mozzarella, basil, olive oil', MenuCategory::Pizza, $pizza, $slice, 300, 0, 700, 'A, G', null, '0.25'],
+            ['Salami', null, 'Tomate, Mozzarella, italienische Salami', 'Tomato, mozzarella, Italian salami', MenuCategory::Pizza, $pizza, $whole, 950, 0, 700, 'A, G', '2, 3', '1.00'],
+            ['Salami', null, 'Tomate, Mozzarella, italienische Salami', 'Tomato, mozzarella, Italian salami', MenuCategory::Pizza, $pizza, $slice, 350, 0, 700, 'A, G', '2, 3', '0.25'],
+            ['Flammkuchen Klassiker', 'Flammkuchen classic', 'Crème fraîche, Speck, Lauch, Zwiebeln', 'Crème fraîche, bacon, leek, onions', MenuCategory::Flammkuchen, $flamm, null, 650, 0, 700, 'A, G', '2, 3', '1.00'],
+            ['Flammkuchen Vegetarisch', 'Flammkuchen vegetarian', 'Crème fraîche, Lauch, gratinierter Bergkäse', 'Crème fraîche, leek, gratinated mountain cheese', MenuCategory::Flammkuchen, $flamm, null, 650, 0, 700, 'A, G', null, '1.00'],
+            ['Flammkuchen Apfel-Zimt', 'Flammkuchen apple cinnamon', 'Dessert: Crème fraîche, Apfel, Zimt, Zucker', 'Dessert: crème fraîche, apple, cinnamon, sugar', MenuCategory::Flammkuchen, $flamm, $whole, 600, 0, 700, 'A, G', null, '1.00'],
+            ['Flammkuchen Apfel-Zimt', 'Flammkuchen apple cinnamon', 'Dessert: Crème fraîche, Apfel, Zimt, Zucker', 'Dessert: crème fraîche, apple, cinnamon, sugar', MenuCategory::Flammkuchen, $flamm, $slice, 350, 0, 700, 'A, G', null, '0.25'],
             ['Cola', null, 'Dose 0,33 l', 'Can 0.33 l', MenuCategory::Drink, null, null, 300, 25, 1900, null, '1, 9', '0.00'],
             ['Wasser', 'Water', 'Flasche 0,33 l', 'Bottle 0.33 l', MenuCategory::Drink, null, null, 250, 25, 1900, null, null, '0.00'],
         ];
 
         $icons = ['Margherita' => 'margherita', 'Salami' => 'salami', 'Flammkuchen Klassiker' => 'flammkuchen-klassiker',
-            'Flammkuchen Vegetarisch' => 'flammkuchen-vegetarisch', 'Cola' => 'cola', 'Wasser' => 'wasser'];
+            'Flammkuchen Vegetarisch' => 'flammkuchen-vegetarisch', 'Flammkuchen Apfel-Zimt' => 'flammkuchen-dessert', 'Cola' => 'cola', 'Wasser' => 'wasser'];
 
         foreach ($items as $sort => [$name, $nameEn, $desc, $descEn, $category, $edition, $variant, $price, $deposit, $vat, $allergens, $additives, $units]) {
             MenuItem::query()->firstOrCreate(

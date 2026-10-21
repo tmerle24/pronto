@@ -22,7 +22,8 @@ class StripeCardTerminal implements CardTerminal
         $intent = $this->stripe->paymentIntents->create([
             'amount' => $order->total_cents,
             'currency' => 'eur',
-            'payment_method_types' => ['card_present'],
+            // API 2026-09-30: replaces payment_method_types
+            'allowed_payment_method_types' => ['card_present'],
             'capture_method' => 'automatic',
             'description' => sprintf('%s Theke %d', config('brand.name'), $order->id),
             'metadata' => ['order_id' => (string) $order->id, 'event_id' => (string) $order->event_id, 'channel' => 'tap_to_pay'],
