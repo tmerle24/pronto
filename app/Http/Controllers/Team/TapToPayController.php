@@ -17,6 +17,7 @@ use App\Services\Payments\CardTerminal;
 use App\Services\Payments\TapToPay;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 /** JSON endpoints for the counter app; the native Stripe SDK does the tap in between. */
 class TapToPayController extends Controller
@@ -28,6 +29,18 @@ class TapToPayController extends Controller
         abort_unless($this->tapToPay->enabled(), 404);
 
         return response()->json(['secret' => $terminal->connectionToken()]);
+    }
+
+    /** Native SDK events from the counter phone, for diagnosis in the server log. */
+    public function log(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'event' => ['required', 'string', 'max:60'],
+            'data' => ['nullable', 'array'],
+        ]);
+        Log::info('tap to pay: '.$data['event'], ['user' => $request->user()?->id, 'data' => $data['data'] ?? null]);
+
+        return response()->json(['ok' => true]);
     }
 
     public function store(Request $request, TapToPayCheckout $checkout): JsonResponse
