@@ -21,7 +21,7 @@ class StripeCardTerminalTest extends TestCase
         $request = $stripe->requests[0];
         $this->assertSame(1900, $request['params']['amount']);
         $this->assertSame('eur', $request['params']['currency']);
-        $this->assertSame(['card_present'], $request['params']['payment_method_types']);
+        $this->assertSame(['card_present'], $request['params']['allowed_payment_method_types']);
         $this->assertSame('42', $request['params']['metadata']['order_id']);
         $this->assertSame('pronto-tap-42', $request['opts']['idempotency_key']);
     }
