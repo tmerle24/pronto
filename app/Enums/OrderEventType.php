@@ -8,6 +8,7 @@ enum OrderEventType: string
     case Queued = 'queued';
     case StatusChanged = 'status_changed';
     case PaymentChanged = 'payment_changed';
+    case PaymentMethodChanged = 'payment_method_changed';
     case CustomerNotified = 'customer_notified';
     case Expired = 'expired';
 }

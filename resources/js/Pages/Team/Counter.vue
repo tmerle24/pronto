@@ -3,8 +3,10 @@ import MenuIcon from '@/Components/MenuIcon.vue';
 import TeamNav from '@/Components/TeamNav.vue';
 import Wordmark from '@/Components/Wordmark.vue';
 import { useEcho } from '@/lib/echo';
+import { NetworkError, postJson } from '@/lib/http';
 import { euro } from '@/lib/money';
-import { Head, useForm, usePage } from '@inertiajs/vue3';
+import { cancelCollect, collect, describe, isNativeApp, prepare } from '@/lib/tapToPay';
+import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps({
@@ -12,9 +14,11 @@ const props = defineProps({
     items: Array,
     status: Object,
     placed: Object,
+    tapToPay: Object,
 });
 
 const VARIANT = { whole: 'ganz', slice: 'Stück' };
+const PAID_TEXT = { cash: 'Bar bezahlt', counter_card: 'Karte am Terminal', tap_to_pay: 'Karte bezahlt (Tap to Pay)' };
 const quantities = reactive({});
 const soldOut = ref(new Set(props.status?.sold_out ?? []));
 const byId = Object.fromEntries(props.items.map((i) => [i.id, i]));
@@ -62,6 +66,77 @@ function submit(method) {
     });
 }
 
+// Tap to Pay: order first (amount from the server), then the native tap screen
+const nativeApp = isNativeApp();
+const tapAvailable = nativeApp && props.tapToPay?.enabled;
+const tapSetupError = ref(null);
+const tap = ref(null); // { order, secret, total, phase: starting|waiting|confirming|failed, error }
+
+function setupTap() {
+    tapSetupError.value = null;
+    prepare(props.tapToPay).catch((e) => (tapSetupError.value = describe(e, 'Keine Verbindung zu Stripe.')));
+}
+
+async function tapRequest(url, body = {}) {
+    try {
+        return await postJson(url, body);
+    } catch (e) {
+        return { status: 0, data: { message: e instanceof NetworkError ? 'Keine Verbindung. Nochmal versuchen.' : 'Fehler.' } };
+    }
+}
+
+function placedOrder(placed) {
+    tap.value = null;
+    clear();
+    kitchenChoice.value = null;
+    receipt.value = placed;
+    given.value = null;
+}
+
+async function startTap() {
+    tap.value = { phase: 'starting', total: total.value };
+    const { status, data } = await tapRequest(route('team.counter.tap'), {
+        lines: lines.value.map(({ id, quantity }) => ({ id, quantity })),
+        handed_over: !toKitchen.value,
+    });
+    if (status !== 200) {
+        tap.value = null;
+        form.setError('order', data.message ?? 'Fehler.');
+        return;
+    }
+    form.clearErrors();
+    tap.value = { phase: 'waiting', order: data.order, secret: data.client_secret, total: data.total_cents };
+    await runTap();
+}
+
+async function runTap() {
+    tap.value.phase = 'waiting';
+    tap.value.error = null;
+    try {
+        await collect(props.tapToPay, tap.value.secret);
+    } catch (e) {
+        if (tap.value) Object.assign(tap.value, { phase: 'failed', error: describe(e) });
+        return;
+    }
+    await confirmTap();
+}
+
+async function confirmTap() {
+    tap.value.phase = 'confirming';
+    const { status, data } = await tapRequest(route('team.counter.tap.complete', tap.value.order));
+    if (status === 200) return placedOrder(data.placed);
+    Object.assign(tap.value, { phase: 'failed', error: status === 0 ? data.message : 'Zahlung nicht bestätigt.', unconfirmed: status === 0 });
+}
+
+async function tapFallback(action) {
+    const order = tap.value.order;
+    tap.value.phase = 'confirming';
+    const { status, data } = await tapRequest(route(`team.counter.tap.${action}`, order));
+    if (status !== 200) return Object.assign(tap.value, { phase: 'failed', error: data.message ?? 'Fehler.' });
+    if (data.placed) return placedOrder(data.placed);
+    tap.value = null; // cancelled, cart stays for a new try
+}
+
 // receipt overlay with change helper
 const receipt = ref(props.placed);
 const given = ref(null);
@@ -86,6 +161,7 @@ const groups = computed(() => [
 ]);
 
 onMounted(() => {
+    if (tapAvailable) setupTap();
     useEcho(usePage().props.realtime)
         ?.channel(`wait.${props.event?.id}`)
         .listen('.wait.updated', (e) => (soldOut.value = new Set(e.status.sold_out)));
@@ -99,7 +175,8 @@ onMounted(() => {
             <Wordmark class="hidden text-2xl sm:inline" />
             <TeamNav current="team.counter" />
             <span class="hidden truncate text-grigio md:inline">{{ event?.name }}</span>
-            <a :href="route('team.manual')" target="_blank" class="ml-auto grid h-12 place-items-center px-2 text-grigio underline">Hilfe</a>
+            <Link v-if="!nativeApp" :href="route('team.app')" class="ml-auto grid h-12 place-items-center px-2 text-grigio underline">App</Link>
+            <a :href="route('team.manual')" target="_blank" class="grid h-12 place-items-center px-2 text-grigio underline" :class="{ 'ml-auto': nativeApp }">Hilfe</a>
         </header>
 
         <p v-if="!event" class="m-auto font-display text-3xl">Kein aktives Event.</p>
@@ -195,16 +272,66 @@ onMounted(() => {
                     </button>
                 </div>
                 <p v-if="form.errors.order" class="mt-2 rounded-card bg-rosso p-3 font-semibold text-white" role="alert">{{ form.errors.order }}</p>
+                <button
+                    v-if="tapAvailable"
+                    type="button"
+                    class="mt-3 h-[76px] w-full rounded-card bg-carbone text-xl leading-tight font-extrabold text-white disabled:opacity-50"
+                    :disabled="!lines.length || form.processing || !!tap"
+                    @click="startTap"
+                >
+                    Karte<br /><span class="text-sm font-semibold">(Tap to Pay)</span>
+                </button>
+                <p v-if="tapSetupError" class="mt-2 text-sm text-rosso">
+                    Tap to Pay: {{ tapSetupError }}
+                    <button type="button" class="ml-1 underline" @click="setupTap">Erneut verbinden</button>
+                </p>
                 <div class="mt-3 grid grid-cols-2 gap-3">
-                    <button type="button" class="h-[76px] rounded-card bg-basilico text-xl font-extrabold text-white disabled:opacity-50" :disabled="!lines.length || form.processing" @click="submit('cash')">
+                    <button type="button" class="h-[76px] rounded-card bg-basilico text-xl font-extrabold text-white disabled:opacity-50" :disabled="!lines.length || form.processing || !!tap" @click="submit('cash')">
                         Bar
                     </button>
-                    <button type="button" class="h-[76px] rounded-card bg-carbone text-xl leading-tight font-extrabold text-white disabled:opacity-50" :disabled="!lines.length || form.processing" @click="submit('counter_card')">
+                    <button
+                        type="button"
+                        class="h-[76px] rounded-card text-xl leading-tight font-extrabold disabled:opacity-50"
+                        :class="tapAvailable ? 'bg-crema-scuro text-carbone' : 'bg-carbone text-white'"
+                        :disabled="!lines.length || form.processing || !!tap"
+                        @click="submit('counter_card')"
+                    >
                         Karte<br /><span class="text-sm font-semibold">(Terminal)</span>
                     </button>
                 </div>
             </aside>
         </main>
+
+        <div v-if="tap" class="fixed inset-0 z-40 flex items-center justify-center bg-carbone/70 p-4" role="dialog" aria-live="polite">
+            <div class="w-full max-w-md rounded-card bg-crema p-6 text-center">
+                <p class="font-display text-5xl font-black">{{ euro(tap.total) }}</p>
+
+                <template v-if="tap.phase === 'waiting'">
+                    <p class="mt-4 font-display text-3xl leading-tight font-bold">Karte oder Handy an das Gerät halten</p>
+                    <p class="mt-2 text-grigio">Kontaktlos: Karte, Handy oder Uhr</p>
+                    <button type="button" class="mt-6 h-14 w-full rounded-card bg-raised text-lg font-bold" @click="cancelCollect">Abbrechen</button>
+                </template>
+
+                <p v-else-if="tap.phase === 'starting' || tap.phase === 'confirming'" class="mt-4 font-display text-3xl font-bold">Einen Moment ...</p>
+
+                <template v-else>
+                    <p class="mt-4 rounded-card bg-rosso p-3 text-lg font-semibold text-white" role="alert">{{ tap.error }}</p>
+                    <div class="mt-4 grid gap-3">
+                        <button
+                            type="button"
+                            class="h-[76px] rounded-card bg-carbone text-xl font-extrabold text-white"
+                            @click="tap.unconfirmed ? confirmTap() : runTap()"
+                        >
+                            {{ tap.unconfirmed ? 'Zahlung erneut prüfen' : 'Nochmal versuchen' }}
+                        </button>
+                        <button type="button" class="h-[76px] rounded-card bg-basilico text-xl font-extrabold text-white" @click="tapFallback('cash')">
+                            Gast zahlt bar
+                        </button>
+                        <button type="button" class="h-14 rounded-card bg-raised text-lg font-bold" @click="tapFallback('cancel')">Bestellung abbrechen</button>
+                    </div>
+                </template>
+            </div>
+        </div>
 
         <div v-if="receipt" class="fixed inset-0 z-30 flex items-center justify-center bg-carbone/60 p-4">
             <div class="w-full max-w-md rounded-card bg-crema p-6 text-center">
@@ -217,7 +344,7 @@ onMounted(() => {
                     <p class="font-display text-9xl leading-none font-black text-rosso">{{ receipt.number }}</p>
                 </template>
                 <p class="mt-2 font-display text-3xl font-bold">{{ euro(receipt.total_cents) }}</p>
-                <p class="text-grigio">{{ receipt.payment_method === 'cash' ? 'Bar bezahlt' : 'Karte am Terminal' }}</p>
+                <p class="text-grigio">{{ PAID_TEXT[receipt.payment_method] }}</p>
 
                 <template v-if="receipt.payment_method === 'cash'">
                     <p class="label-caps mt-4 text-grigio">Gegeben</p>

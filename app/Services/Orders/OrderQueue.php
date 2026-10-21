@@ -51,6 +51,18 @@ class OrderQueue
     }
 
     /**
+     * Paid later than placed (Tap to Pay): hand over or queue, as chosen at the counter.
+     */
+    public function finishPaid(Order $order, ?User $user = null): Order
+    {
+        $handedOver = $order->events()
+            ->where('type', OrderEventType::Created)
+            ->first()?->meta['handed_over'] ?? false;
+
+        return $handedOver ? $this->handOver($order, $user) : $this->release($order);
+    }
+
+    /**
      * Counter sale handed over the counter right away (slice, drink): done at
      * once, no pickup number, never shown in queue or display, but counted in
      * reports and receipts like any other order.

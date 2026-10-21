@@ -4,6 +4,7 @@ namespace App\Services\Orders;
 
 use App\Enums\OrderEventType;
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Events\OrderPaymentChanged;
 use App\Models\Order;
@@ -22,12 +23,12 @@ class OrderPayments
     /** Payment provider confirmed the payment (webhook): paid and into the queue. */
     public function confirmOnline(Order $order): Order
     {
-        $order = $this->markPaid($order, via: 'stripe');
+        $order = $this->markPaid($order, via: $order->payment_method === PaymentMethod::TapToPay ? 'tap_to_pay' : 'stripe');
         if ($order->status === OrderStatus::Cancelled) {
             return $order;
         }
 
-        return $this->queue->release($order);
+        return $order->payment_method === PaymentMethod::TapToPay ? $this->queue->finishPaid($order) : $this->queue->release($order);
     }
 
     public function markPaid(Order $order, ?User $user = null, string $via = 'manual'): Order

@@ -12,7 +12,9 @@ oder in der Prozessliste) und erledigt dann über die Stripe-API:
      (payment_intent.succeeded, payment_intent.payment_failed), Secret speichern
   3. Domain für Apple Pay / Google Pay registrieren
   4. Zahlungsarten prüfen, PayPal einschalten, falls verfügbar
-  5. STRIPE_KEY, STRIPE_SECRET, STRIPE_WEBHOOK_SECRET in .env, Caches und Dienste neu laden
+  5. Terminal-Standort für Tap to Pay anlegen oder wiederverwenden
+  6. STRIPE_KEY, STRIPE_SECRET, STRIPE_WEBHOOK_SECRET, STRIPE_TERMINAL_LOCATION
+     in .env, Caches und Dienste neu laden
 
 Erneut ausführbar, z. B. beim Wechsel von Test- auf Live-Keys. API-Aufrufe
 kosten bei Stripe nichts.
@@ -168,8 +170,36 @@ def main():
     except RuntimeError as e:
         warn(f'Zahlungsarten nicht lesbar: {e}')
 
-    # 5. .env and reload
-    env_set({'STRIPE_KEY': publishable, 'STRIPE_SECRET': secret, 'STRIPE_WEBHOOK_SECRET': webhook['secret']})
+    # 5. terminal location for Tap to Pay (per mode; reused by metadata)
+    location_id = ''
+    try:
+        locations = stripe.call('GET', '/terminal/locations', {'limit': 100})['data']
+        location = next((l for l in locations if (l.get('metadata') or {}).get('pronto') == '1'), None)
+        if location:
+            ok(f'Terminal-Standort {location["id"]} ({location.get("display_name")}) wiederverwendet')
+        else:
+            print('  Tap to Pay braucht einen Standort (Adresse des Stands bzw. der Firma):')
+            line1 = input('    Straße und Hausnummer: ').strip()
+            postal = input('    PLZ: ').strip()
+            city = input('    Ort: ').strip()
+            if not (line1 and postal and city):
+                raise RuntimeError('Adresse unvollständig, Standort nicht angelegt')
+            location = stripe.call('POST', '/terminal/locations', {
+                'display_name': 'TIAMO Pronto',
+                'address[line1]': line1,
+                'address[postal_code]': postal,
+                'address[city]': city,
+                'address[country]': 'DE',
+                'metadata[pronto]': '1',
+            })
+            ok(f'Terminal-Standort {location["id"]} angelegt')
+        location_id = location['id']
+    except RuntimeError as e:
+        warn(f'Tap to Pay nicht eingerichtet: {e}')
+
+    # 6. .env and reload
+    env_set({'STRIPE_KEY': publishable, 'STRIPE_SECRET': secret, 'STRIPE_WEBHOOK_SECRET': webhook['secret'],
+             'STRIPE_TERMINAL_LOCATION': location_id})
     ok('.env aktualisiert (Keys werden nicht angezeigt)')
 
     for cmd in (['php', 'artisan', 'config:cache'],

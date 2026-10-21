@@ -14,8 +14,8 @@ use App\Services\Payments\PaymentGateway;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Storno from the admin. Orders are never deleted. Paid online orders are
- * refunded via Stripe; cash and counter card are marked refunded (money is
+ * Storno from the admin. Orders are never deleted. Paid online and Tap to Pay
+ * orders are refunded via Stripe; cash and counter card are marked refunded (money is
  * handed back at the stand).
  */
 class CancelOrder
@@ -29,7 +29,7 @@ class CancelOrder
             throw InvalidTransition::between($from, OrderStatus::Cancelled);
         }
 
-        $refundOnline = $refund && $order->payment_status === PaymentStatus::Paid && $order->payment_method === PaymentMethod::Online;
+        $refundOnline = $refund && $order->payment_status === PaymentStatus::Paid && in_array($order->payment_method, [PaymentMethod::Online, PaymentMethod::TapToPay], true);
         if ($refundOnline) {
             // provider first: if Stripe fails, nothing changes here
             $this->payments->refund($order);

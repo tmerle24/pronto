@@ -10,6 +10,7 @@ use App\Models\Event;
 use App\Models\MenuItem;
 use App\Models\Order;
 use App\Models\User;
+use App\Services\Payments\CardTerminal;
 use App\Services\Payments\PaymentGateway;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -28,6 +29,7 @@ class PlaceOrder
         private readonly PaymentGateway $payments,
         private readonly OrderQueue $queue,
         private readonly OrderPayments $orderPayments,
+        private readonly CardTerminal $terminal,
     ) {}
 
     /**
@@ -46,7 +48,7 @@ class PlaceOrder
         $this->guard($event, $method, $source);
         $items = $this->resolveItems($event, $lines);
 
-        $order = DB::transaction(function () use ($event, $lines, $items, $method, $source, $locale, $user): Order {
+        $order = DB::transaction(function () use ($event, $lines, $items, $method, $source, $locale, $user, $handedOver): Order {
             $order = new Order([
                 'event_id' => $event->id,
                 'public_token' => Str::random(40),
@@ -85,7 +87,9 @@ class PlaceOrder
             $order->events()->create([
                 'type' => OrderEventType::Created,
                 'user_id' => $user?->id,
-                'meta' => ['method' => $method->value, 'source' => $source->value, 'total_cents' => $total],
+                // handed_over: read again when a later payment finishes the order (Tap to Pay)
+                'meta' => ['method' => $method->value, 'source' => $source->value, 'total_cents' => $total]
+                    + ($handedOver && $source === OrderSource::Counter ? ['handed_over' => true] : []),
             ]);
 
             return $order;
@@ -100,6 +104,8 @@ class PlaceOrder
                 $user,
             ),
             PaymentMethod::CounterCard => $this->finish($this->orderPayments->markPaid($order, $user, 'counter_card'), $handedOver, $user),
+            // finished once the tap went through (TapToPayCheckout::complete or webhook)
+            PaymentMethod::TapToPay => $this->startTerminalPayment($order),
         };
     }
 
@@ -120,7 +126,7 @@ class PlaceOrder
         if ($source === OrderSource::Counter && $method === PaymentMethod::Online) {
             throw new OrderRejected('Ungültige Bestellung.');
         }
-        if ($source === OrderSource::Qr && $method === PaymentMethod::CounterCard) {
+        if ($source === OrderSource::Qr && in_array($method, [PaymentMethod::CounterCard, PaymentMethod::TapToPay], true)) {
             throw new OrderRejected('Diese Zahlungsart gibt es nur an der Theke.');
         }
         if ($source === OrderSource::Qr && $method === PaymentMethod::Cash && ! $event->cash_allowed) {
@@ -164,6 +170,14 @@ class PlaceOrder
     private function startOnlinePayment(Order $order): Order
     {
         $order->stripe_payment_intent_id = $this->payments->createPayment($order);
+        $order->save();
+
+        return $order;
+    }
+
+    private function startTerminalPayment(Order $order): Order
+    {
+        $order->stripe_payment_intent_id = $this->terminal->createPayment($order);
         $order->save();
 
         return $order;
