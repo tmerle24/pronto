@@ -63,6 +63,7 @@ Route::prefix('team')->name('team.')->group(function () {
 
         // Tap to Pay (native counter app)
         Route::post('/terminal/connection-token', [TapToPayController::class, 'connectionToken'])->name('terminal.token');
+        Route::post('/terminal/log', [TapToPayController::class, 'log'])->middleware('throttle:120,1')->name('terminal.log');
         Route::post('/counter/tap', [TapToPayController::class, 'store'])->name('counter.tap');
         Route::post('/counter/tap/{order:id}/complete', [TapToPayController::class, 'complete'])->name('counter.tap.complete');
         Route::post('/counter/tap/{order:id}/cash', [TapToPayController::class, 'cash'])->name('counter.tap.cash');

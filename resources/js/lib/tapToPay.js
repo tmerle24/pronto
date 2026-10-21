@@ -14,8 +14,19 @@ function plugin() {
     return pluginPromise;
 }
 
+// SDK events to the server log; Stripe's own screen only says "Fehler"
+function report(event, data = null) {
+    postJson(route('team.terminal.log'), { event, data }).catch(() => {});
+}
+
+const REPORTED = ['RequestDisplayMessage', 'RequestReaderInput', 'PaymentStatusChange', 'ConnectionStatusChange', 'ReaderEvent', 'Failed', 'Canceled', 'DisconnectedReader', 'UnexpectedReaderDisconnect', 'ConnectedReader'];
+
 async function connect({ location, simulated }) {
     const { StripeTerminal, TerminalConnectTypes, TerminalEventsEnum } = await plugin();
+    for (const name of REPORTED) {
+        await StripeTerminal.addListener(TerminalEventsEnum[name], (data) => report(name, data)).catch(() => {});
+    }
+    report('connect', { location, simulated });
 
     const granted = await StripeTerminal.requestPermissions({ permissions: ['location', 'bluetooth'] }).catch(() => null);
     if (granted?.location && granted.location !== 'granted') {
@@ -32,6 +43,7 @@ async function connect({ location, simulated }) {
     await StripeTerminal.initialize({ isTest: simulated });
 
     const { reader } = await StripeTerminal.getConnectedReader();
+    report('reader', reader);
     if (reader) return;
 
     const { readers } = await StripeTerminal.discoverReaders({ type: TerminalConnectTypes.TapToPay, locationId: location });
@@ -54,8 +66,15 @@ export function prepare(config) {
 export async function collect(config, clientSecret) {
     await prepare(config);
     const { StripeTerminal } = await plugin();
-    await StripeTerminal.collectPaymentMethod({ paymentIntent: clientSecret });
-    await StripeTerminal.confirmPaymentIntent();
+    try {
+        report('collect');
+        report('collected', await StripeTerminal.collectPaymentMethod({ paymentIntent: clientSecret }));
+        await StripeTerminal.confirmPaymentIntent();
+        report('confirmed');
+    } catch (e) {
+        report('error', { message: e?.message, code: e?.code, data: e?.data });
+        throw e;
+    }
 }
 
 export async function cancelCollect() {
