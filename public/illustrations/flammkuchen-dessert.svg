@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="10 6 158.5 109.5" width="158.5" height="109.5"><title>flammkuchen-dessert</title><defs><radialGradient id="crust" cx="50%" cy="45%" r="55%">
+      <stop offset="78%" stop-color="#E9B66B"/><stop offset="92%" stop-color="#C98A3D"/><stop offset="100%" stop-color="#8F5A26"/>
+    </radialGradient><symbol id="leaf" viewBox="0 0 40 24"><path d="M2 12 C10 0 30 0 38 12 C30 24 10 24 2 12Z" fill="#2F6B3B"/><path d="M4 12 H34" stroke="#4E8C5A" stroke-width="1.4" fill="none"/></symbol><symbol id="fk-base" viewBox="0 0 200 140">
+      <path d="M14 30 Q10 12 34 10 L168 8 Q192 10 188 34 L190 106 Q190 130 166 130 L36 132 Q10 130 12 108Z" fill="url(#crust)"/>
+      <path d="M26 34 Q24 22 40 22 L162 20 Q178 22 176 38 L178 102 Q178 118 162 118 L42 120 Q24 118 26 104Z" fill="#FFF3DC"/>
+      <g fill="#E9C98E" opacity=".7"><circle cx="50" cy="40" r="6"/><circle cx="150" cy="100" r="7"/><circle cx="120" cy="36" r="5"/><circle cx="64" cy="104" r="6"/></g>
+    </symbol></defs>
+      <use href="#fk-base"/>
+      <g transform="translate(10 6) scale(0.74)">
+      <g stroke="#B8202B" stroke-width="2"><g fill="#F6E7B0">
+        <path d="M38 50 a16 16 0 0 1 28 -6 a12 12 0 0 0 -28 6z"/><path d="M92 36 a16 16 0 0 1 28 -6 a12 12 0 0 0 -28 6z"/><path d="M138 54 a16 16 0 0 1 28 -6 a12 12 0 0 0 -28 6z"/>
+        <path d="M60 90 a16 16 0 0 1 28 -6 a12 12 0 0 0 -28 6z"/><path d="M114 94 a16 16 0 0 1 28 -6 a12 12 0 0 0 -28 6z"/><path d="M84 66 a16 16 0 0 1 28 -6 a12 12 0 0 0 -28 6z"/>
+      </g></g>
+      <g fill="#8A4B22" opacity=".7"><circle cx="48" cy="62" r="1.6"/><circle cx="72" cy="56" r="1.4"/><circle cx="104" cy="50" r="1.6"/><circle cx="130" cy="44" r="1.4"/><circle cx="150" cy="70" r="1.6"/><circle cx="160" cy="84" r="1.4"/><circle cx="76" cy="104" r="1.6"/><circle cx="100" cy="82" r="1.4"/><circle cx="128" cy="106" r="1.6"/><circle cx="56" cy="80" r="1.4"/><circle cx="118" cy="68" r="1.6"/><circle cx="142" cy="102" r="1.4"/></g>
+      </g>
+    </svg>
