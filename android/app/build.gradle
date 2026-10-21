@@ -53,6 +53,9 @@ dependencies {
     implementation "androidx.coordinatorlayout:coordinatorlayout:$androidxCoordinatorLayoutVersion"
     implementation "androidx.core:core-splashscreen:$coreSplashScreenVersion"
     implementation project(':capacitor-android')
+    // MainApplication: Stripe Terminal lifecycle delegate and Tap to Pay process check
+    implementation "com.stripe:stripeterminal-core:$stripeterminalCoreVersion"
+    implementation "com.stripe:stripeterminal-taptopay:$stripeterminalTapToPayVersion"
     testImplementation "junit:junit:$junitVersion"
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
