@@ -147,7 +147,8 @@ kein NFC oder kein Android 13.
 **Neue APK bauen** (nur bei nativen Änderungen; Web-Änderungen kommen wie immer über `deploy.sh`):
 
 1. GitHub, Actions, "Android APK (Cassa-App)", "Run workflow", Version eintragen (z. B. `1.0.1`).
-2. Das Artifact `tiamo-pronto-<version>` herunterladen, entpacken und auf den Server legen:
+2. Die APK liegt danach als Release unter `https://github.com/tmerle24/pronto/releases/latest/download/tiamo-pronto.apk`
+   (auch als Artifact `tiamo-pronto-<version>`). Herunterladen und auf den Server legen:
 
 ```bash
 scp tiamo-pronto.apk wisherful:/tmp/
