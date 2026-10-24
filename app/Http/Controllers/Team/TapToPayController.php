@@ -51,6 +51,7 @@ class TapToPayController extends Controller
             'lines' => ['required', 'array', 'min:1', 'max:30'],
             'lines.*.id' => ['required', 'integer'],
             'lines.*.quantity' => ['required', 'integer', 'min:1', 'max:'.PlaceOrder::MAX_QUANTITY_PER_LINE],
+            'lines.*.price_cents' => ['nullable', 'integer', 'min:0', 'max:'.PlaceOrder::MAX_CUSTOM_PRICE_CENTS],
             'handed_over' => ['boolean'],
         ]);
 
@@ -62,7 +63,11 @@ class TapToPayController extends Controller
         try {
             $order = $checkout->start(
                 $event,
-                array_map(fn (array $l) => new OrderLine((int) $l['id'], (int) $l['quantity']), array_values($data['lines'])),
+                array_map(fn (array $l) => new OrderLine(
+                    (int) $l['id'],
+                    (int) $l['quantity'],
+                    isset($l['price_cents']) ? (int) $l['price_cents'] : null,
+                ), array_values($data['lines'])),
                 $this->user($request),
                 (bool) ($data['handed_over'] ?? false),
             );

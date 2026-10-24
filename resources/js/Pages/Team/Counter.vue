@@ -7,7 +7,7 @@ import { NetworkError, postJson } from '@/lib/http';
 import { euro } from '@/lib/money';
 import { cancelCollect, collect, describe, isNativeApp, prepare } from '@/lib/tapToPay';
 import { Head, Link, useForm, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 
 const props = defineProps({
     event: Object,
@@ -17,9 +17,11 @@ const props = defineProps({
     tapToPay: Object,
 });
 
-const VARIANT = { whole: 'ganz', slice: 'Stück' };
+const VARIANT = { whole: 'ganz', slice: 'Stück', gratinated: 'gratiniert' };
 const PAID_TEXT = { cash: 'Bar bezahlt', counter_card: 'Karte am Terminal', tap_to_pay: 'Karte bezahlt (Tap to Pay)' };
 const quantities = reactive({});
+// individual price per item in cents, an exception set by the team; deposit stays as it is
+const customPrices = reactive({});
 const soldOut = ref(new Set(props.status?.sold_out ?? []));
 const byId = Object.fromEntries(props.items.map((i) => [i.id, i]));
 
@@ -28,17 +30,46 @@ const lines = computed(() =>
         .filter(([, q]) => q > 0)
         .map(([id, quantity]) => ({ id: Number(id), quantity, item: byId[id] })),
 );
-const total = computed(() => lines.value.reduce((sum, l) => sum + (l.item.price_cents + l.item.deposit_cents) * l.quantity, 0));
+const unitPrice = (item) => customPrices[item.id] ?? item.price_cents;
+const total = computed(() => lines.value.reduce((sum, l) => sum + (unitPrice(l.item) + l.item.deposit_cents) * l.quantity, 0));
+const payload = () => lines.value.map(({ id, quantity }) => ({ id, quantity, price_cents: customPrices[id] ?? null }));
 
 function add(item) {
     if (soldOut.value.has(item.id)) return;
     quantities[item.id] = Math.min((quantities[item.id] ?? 0) + 1, 20);
 }
 function remove(id) {
-    if (--quantities[id] <= 0) delete quantities[id];
+    if (--quantities[id] <= 0) {
+        delete quantities[id];
+        delete customPrices[id];
+    }
 }
 function clear() {
     for (const id of Object.keys(quantities)) delete quantities[id];
+    for (const id of Object.keys(customPrices)) delete customPrices[id];
+}
+
+// price dialog: "6", "6,5", "6,50" or "6.50" euro
+const priceEdit = ref(null); // { item, text, error }
+function editPrice(item) {
+    priceEdit.value = { item, text: (unitPrice(item) / 100).toFixed(2).replace('.', ','), error: null };
+    nextTick(() => document.getElementById('custom-price')?.select());
+}
+function savePrice() {
+    const match = priceEdit.value.text.trim().replace(/\s*€$/, '').match(/^(\d{1,3})(?:[.,](\d{1,2}))?$/);
+    if (!match) {
+        priceEdit.value.error = 'Bitte einen Betrag wie 5,50 eingeben.';
+        return;
+    }
+    const cents = Number(match[1]) * 100 + Number((match[2] ?? '0').padEnd(2, '0'));
+    const { item } = priceEdit.value;
+    if (cents === item.price_cents) delete customPrices[item.id];
+    else customPrices[item.id] = cents;
+    priceEdit.value = null;
+}
+function resetPrice() {
+    delete customPrices[priceEdit.value.item.id];
+    priceEdit.value = null;
 }
 
 // slices and drinks usually go straight over the counter; anything whole goes to the kitchen.
@@ -53,7 +84,7 @@ watch(() => lines.value.length, (n) => {
 const listOpen = ref(false);
 const form = useForm({ lines: [], payment_method: 'cash', handed_over: false });
 function submit(method) {
-    form.lines = lines.value.map(({ id, quantity }) => ({ id, quantity }));
+    form.lines = payload();
     form.payment_method = method;
     form.handed_over = !toKitchen.value;
     form.post(route('team.counter.store'), {
@@ -96,7 +127,7 @@ function placedOrder(placed) {
 async function startTap() {
     tap.value = { phase: 'starting', total: total.value };
     const { status, data } = await tapRequest(route('team.counter.tap'), {
-        lines: lines.value.map(({ id, quantity }) => ({ id, quantity })),
+        lines: payload(),
         handed_over: !toKitchen.value,
     });
     if (status !== 200) {
@@ -160,7 +191,18 @@ const groups = computed(() => [
     { title: 'Getränke', rows: [props.items.filter((i) => i.category === 'drink')] },
 ]);
 
+// phone: the pay panel is fixed over the list, its height varies (Tap to Pay, errors, open list),
+// so the list gets exactly that much room at the bottom to scroll the last tiles into view
+const payPanel = ref(null);
+const payHeight = ref(0);
+let payObserver = null;
+onBeforeUnmount(() => payObserver?.disconnect());
+
 onMounted(() => {
+    if (payPanel.value && 'ResizeObserver' in window) {
+        payObserver = new ResizeObserver(() => (payHeight.value = payPanel.value?.offsetHeight ?? 0));
+        payObserver.observe(payPanel.value);
+    }
     if (tapAvailable) setupTap();
     useEcho(usePage().props.realtime)
         ?.channel(`wait.${props.event?.id}`)
@@ -182,8 +224,8 @@ onMounted(() => {
         <p v-if="!event" class="m-auto font-display text-3xl">Kein aktives Event.</p>
 
         <main v-else class="grid min-h-0 flex-1 gap-3 px-3 pb-3 md:grid-cols-[1fr_320px]">
-            <!-- phone: room below for the fixed pay panel -->
-            <section class="min-h-0 overflow-y-auto pb-72 md:pb-0">
+            <!-- phone: room below for the fixed pay panel, measured (fallback 30rem) -->
+            <section class="min-h-0 overflow-y-auto pb-(--pay-room) md:pb-0" :style="{ '--pay-room': payHeight ? `${payHeight + 12}px` : '30rem' }">
                 <div v-for="group in groups" :key="group.title" class="mb-4">
                     <h2 class="label-caps mb-2 text-grigio">{{ group.title }}</h2>
                     <div v-for="(row, r) in group.rows" :key="r" class="mb-2 grid grid-cols-1 gap-2 md:mb-3 md:grid-cols-3 md:gap-3">
@@ -210,11 +252,16 @@ onMounted(() => {
                                 class="shrink-0 rounded-full bg-basilico px-2 text-base leading-6 font-extrabold text-white tabular-nums"
                             >{{ quantities[item.id] }}&#8239;×</span>
                             <!-- -2px: Playfair's built-in side bearing plus anti-aliasing, so the visible gap matches -->
+                            <!-- names may wrap: on a phone a long name must never run into the price -->
                             <span class="min-w-0 flex-1 leading-tight" :class="{ '-ml-0.5': !quantities[item.id] }">
-                                <span class="block font-display text-xl font-bold whitespace-nowrap">{{ item.name }}</span>
+                                <span class="block font-display text-xl font-bold text-balance break-words">{{ item.name }}</span>
                                 <span v-if="item.variant" class="block text-sm text-grigio">{{ VARIANT[item.variant] }}</span>
                             </span>
-                            <span class="shrink-0 font-semibold tabular-nums">{{ soldOut.has(item.id) ? 'Ausverkauft' : euro(item.price_cents + item.deposit_cents) }}</span>
+                            <span v-if="soldOut.has(item.id)" class="shrink-0 text-sm font-semibold">Ausverkauft</span>
+                            <span v-else class="shrink-0 text-right font-semibold tabular-nums">
+                                <span :class="{ 'text-rosso': item.id in customPrices }">{{ euro(unitPrice(item) + item.deposit_cents) }}</span>
+                                <span v-if="item.id in customPrices" class="block text-xs font-normal text-grigio line-through">{{ euro(item.price_cents + item.deposit_cents) }}</span>
+                            </span>
                         </button>
                     </div>
                 </div>
@@ -222,6 +269,7 @@ onMounted(() => {
 
             <!-- phone: fixed to the bottom, within thumb reach; tablet: right column -->
             <aside
+                ref="payPanel"
                 class="fixed inset-x-0 bottom-0 z-20 flex max-h-[85dvh] min-h-0 flex-col rounded-t-[22px] bg-raised p-4 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[0_-8px_24px_rgba(42,30,25,0.12)] md:static md:max-h-none md:rounded-card md:pb-4 md:shadow-none"
             >
                 <h2 class="label-caps hidden text-grigio md:block">Bestellung</h2>
@@ -234,14 +282,24 @@ onMounted(() => {
                     @click="listOpen = !listOpen"
                 >
                     <span>Bestellung ({{ lines.reduce((n, l) => n + l.quantity, 0) }})</span>
-                    <span>{{ listOpen ? 'zuklappen' : 'ändern' }}</span>
+                    <span>{{ listOpen ? 'zuklappen' : 'ändern / Preis' }}</span>
                 </button>
                 <ul class="mt-2 min-h-0 flex-1 divide-y divide-crema-scuro overflow-y-auto md:block" :class="listOpen ? 'block' : 'hidden'">
                     <li v-for="line in lines" :key="line.id" class="flex items-center gap-2 py-2">
-                        <span class="flex flex-1 gap-1.5 text-lg">
+                        <span class="flex min-w-0 flex-1 gap-1.5 text-lg">
                             <span class="shrink-0 font-extrabold tabular-nums">{{ line.quantity }}&#8239;×</span>
-                            <span class="font-semibold">{{ line.item.name }} <span class="font-normal text-grigio">{{ VARIANT[line.item.variant] ?? '' }}</span></span>
+                            <span class="min-w-0 font-semibold">{{ line.item.name }} <span class="font-normal text-grigio">{{ VARIANT[line.item.variant] ?? '' }}</span></span>
                         </span>
+                        <!-- individual price: an exception, so set on purpose in the list, not on the tiles -->
+                        <button
+                            type="button"
+                            class="h-12 shrink-0 rounded-full px-3 font-semibold tabular-nums"
+                            :class="line.id in customPrices ? 'bg-rosso text-white' : 'bg-crema-scuro'"
+                            :aria-label="`Preis für ${line.item.name} ändern`"
+                            @click="editPrice(line.item)"
+                        >
+                            {{ euro(unitPrice(line.item)) }}
+                        </button>
                         <button type="button" class="size-12 rounded-full bg-crema-scuro text-2xl font-bold" :aria-label="`${line.item.name} weniger`" @click="remove(line.id)">-</button>
                     </li>
                     <li v-if="!lines.length" class="py-6 text-center text-grigio">Tippe auf die Artikel.</li>
@@ -276,7 +334,7 @@ onMounted(() => {
                     v-if="tapAvailable"
                     type="button"
                     class="mt-3 h-[76px] w-full rounded-card bg-carbone text-xl leading-tight font-extrabold text-white disabled:opacity-50"
-                    :disabled="!lines.length || form.processing || !!tap"
+                    :disabled="!lines.length || total < 50 || form.processing || !!tap"
                     @click="startTap"
                 >
                     Karte<br /><span class="text-sm font-semibold">(Tap to Pay)</span>
@@ -301,6 +359,35 @@ onMounted(() => {
                 </div>
             </aside>
         </main>
+
+        <div v-if="priceEdit" class="fixed inset-0 z-40 flex items-center justify-center bg-carbone/70 p-4" role="dialog" aria-labelledby="custom-price-title">
+            <form class="w-full max-w-md rounded-card bg-crema p-6" @submit.prevent="savePrice">
+                <p id="custom-price-title" class="font-display text-2xl leading-tight font-bold">
+                    {{ priceEdit.item.name }} <span class="font-sans text-lg font-normal text-grigio">{{ VARIANT[priceEdit.item.variant] ?? '' }}</span>
+                </p>
+                <p class="mt-1 text-grigio">
+                    Karte: {{ euro(priceEdit.item.price_cents) }}<template v-if="priceEdit.item.deposit_cents"> (+ {{ euro(priceEdit.item.deposit_cents) }} Pfand bleibt)</template>
+                </p>
+                <label for="custom-price" class="label-caps mt-4 block text-grigio">Individueller Preis pro Stück</label>
+                <div class="mt-2 flex items-center rounded-card bg-raised px-4">
+                    <input
+                        id="custom-price"
+                        v-model="priceEdit.text"
+                        type="text"
+                        inputmode="decimal"
+                        autocomplete="off"
+                        class="h-16 min-w-0 flex-1 bg-transparent font-display text-4xl font-black tabular-nums outline-none"
+                    />
+                    <span class="font-display text-3xl font-bold">€</span>
+                </div>
+                <p v-if="priceEdit.error" class="mt-2 font-semibold text-rosso" role="alert">{{ priceEdit.error }}</p>
+                <button type="submit" class="mt-4 h-[76px] w-full rounded-card bg-carbone text-xl font-extrabold text-white">Preis übernehmen</button>
+                <div class="mt-3 grid grid-cols-2 gap-3">
+                    <button type="button" class="h-14 rounded-card bg-raised text-lg font-bold" @click="resetPrice">Kartenpreis</button>
+                    <button type="button" class="h-14 rounded-card bg-raised text-lg font-bold" @click="priceEdit = null">Abbrechen</button>
+                </div>
+            </form>
+        </div>
 
         <div v-if="tap" class="fixed inset-0 z-40 flex items-center justify-center bg-carbone/70 p-4" role="dialog" aria-live="polite">
             <div class="w-full max-w-md rounded-card bg-crema p-6 text-center">

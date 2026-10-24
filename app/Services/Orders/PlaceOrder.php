@@ -16,11 +16,17 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
- * Creates an order from cart lines. Prices always come from the database.
+ * Creates an order from cart lines. Prices come from the database; only the
+ * counter may set an individual price per line (logged in the order events).
  */
 class PlaceOrder
 {
     public const MAX_QUANTITY_PER_LINE = 20;
+
+    public const MAX_CUSTOM_PRICE_CENTS = 100000;
+
+    // Stripe's minimum charge in EUR
+    private const MIN_TAP_TO_PAY_CENTS = 50;
 
     // no 0/O, 1/I/L, 2/Z, 5/S, 8/B
     private const SHORT_CODE_ALPHABET = 'ACDEFHJKMNPRTUVWXY34679';
@@ -45,7 +51,7 @@ class PlaceOrder
         // counter only: handed over the counter right away, skips the queue
         bool $handedOver = false,
     ): Order {
-        $this->guard($event, $method, $source);
+        $this->guard($event, $method, $source, $lines);
         $items = $this->resolveItems($event, $lines);
 
         $order = DB::transaction(function () use ($event, $lines, $items, $method, $source, $locale, $user, $handedOver): Order {
@@ -64,20 +70,29 @@ class PlaceOrder
 
             $total = 0;
             $units = 0.0;
+            $overrides = [];
             foreach ($lines as $line) {
                 $item = $items[$line->menuItemId];
+                $price = $line->unitPriceCents ?? $item->price_cents;
+                if ($price !== $item->price_cents) {
+                    $overrides[] = ['menu_item_id' => $item->id, 'menu_cents' => $item->price_cents, 'charged_cents' => $price];
+                }
                 $order->items()->create([
                     'menu_item_id' => $item->id,
                     'name' => $item->name,
                     'variant' => $item->variant,
-                    'unit_price_cents' => $item->price_cents,
+                    'unit_price_cents' => $price,
                     'unit_deposit_cents' => $item->deposit_cents,
                     'vat_rate_bp' => $item->vat_rate_bp,
                     'unit_oven_units' => $item->oven_units,
                     'quantity' => $line->quantity,
                 ]);
-                $total += ($item->price_cents + $item->deposit_cents) * $line->quantity;
+                $total += ($price + $item->deposit_cents) * $line->quantity;
                 $units += (float) $item->oven_units * $line->quantity;
+            }
+
+            if ($method === PaymentMethod::TapToPay && $total < self::MIN_TAP_TO_PAY_CENTS) {
+                throw new OrderRejected('Unter 0,50 € geht keine Kartenzahlung. Bitte bar.');
             }
 
             $order->total_cents = $total;
@@ -89,7 +104,8 @@ class PlaceOrder
                 'user_id' => $user?->id,
                 // handed_over: read again when a later payment finishes the order (Tap to Pay)
                 'meta' => ['method' => $method->value, 'source' => $source->value, 'total_cents' => $total]
-                    + ($handedOver && $source === OrderSource::Counter ? ['handed_over' => true] : []),
+                    + ($handedOver && $source === OrderSource::Counter ? ['handed_over' => true] : [])
+                    + ($overrides !== [] ? ['custom_prices' => $overrides] : []),
             ]);
 
             return $order;
@@ -114,7 +130,10 @@ class PlaceOrder
         return $handedOver ? $this->queue->handOver($order, $user) : $this->queue->release($order);
     }
 
-    private function guard(Event $event, PaymentMethod $method, OrderSource $source): void
+    /**
+     * @param  list<OrderLine>  $lines
+     */
+    private function guard(Event $event, PaymentMethod $method, OrderSource $source, array $lines): void
     {
         if (! $event->is_active) {
             throw new OrderRejected('Gerade ist kein Markt geöffnet.');
@@ -131,6 +150,12 @@ class PlaceOrder
         }
         if ($source === OrderSource::Qr && $method === PaymentMethod::Cash && ! $event->cash_allowed) {
             throw new OrderRejected('Barzahlung ist gerade nicht möglich.');
+        }
+        foreach ($lines as $line) {
+            if ($line->unitPriceCents !== null && ($source !== OrderSource::Counter
+                || $line->unitPriceCents < 0 || $line->unitPriceCents > self::MAX_CUSTOM_PRICE_CENTS)) {
+                throw new OrderRejected('Ungültige Bestellung.');
+            }
         }
     }
 

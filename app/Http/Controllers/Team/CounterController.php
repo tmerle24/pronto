@@ -51,6 +51,7 @@ class CounterController extends Controller
             'lines' => ['required', 'array', 'min:1', 'max:30'],
             'lines.*.id' => ['required', 'integer'],
             'lines.*.quantity' => ['required', 'integer', 'min:1', 'max:'.PlaceOrder::MAX_QUANTITY_PER_LINE],
+            'lines.*.price_cents' => ['nullable', 'integer', 'min:0', 'max:'.PlaceOrder::MAX_CUSTOM_PRICE_CENTS],
             'payment_method' => ['required', Rule::in([PaymentMethod::Cash->value, PaymentMethod::CounterCard->value])],
             'handed_over' => ['boolean'],
         ]);
@@ -66,7 +67,11 @@ class CounterController extends Controller
         try {
             $order = $placeOrder(
                 $event,
-                array_map(fn (array $l) => new OrderLine((int) $l['id'], (int) $l['quantity']), array_values($data['lines'])),
+                array_map(fn (array $l) => new OrderLine(
+                    (int) $l['id'],
+                    (int) $l['quantity'],
+                    isset($l['price_cents']) ? (int) $l['price_cents'] : null,
+                ), array_values($data['lines'])),
                 PaymentMethod::from($data['payment_method']),
                 OrderSource::Counter,
                 'de',

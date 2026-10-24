@@ -243,6 +243,23 @@ class TapToPayTest extends TestCase
         $this->get('/team/counter')->assertInertia(fn ($page) => $page->where('tapToPay.enabled', false));
     }
 
+    public function test_individual_price_is_charged(): void
+    {
+        $this->actingAs($this->staff)
+            ->postJson('/team/counter/tap', ['lines' => [['id' => $this->pizza->id, 'quantity' => 2, 'price_cents' => 700]]])
+            ->assertOk()
+            ->assertJsonPath('total_cents', 1400);
+    }
+
+    public function test_tap_needs_at_least_fifty_cents(): void
+    {
+        $this->actingAs($this->staff)
+            ->postJson('/team/counter/tap', ['lines' => [['id' => $this->pizza->id, 'quantity' => 1, 'price_cents' => 0]]])
+            ->assertStatus(422);
+
+        $this->assertSame(0, Order::query()->count());
+    }
+
     public function test_guests_cannot_choose_tap_to_pay(): void
     {
         $event = Event::query()->sole();

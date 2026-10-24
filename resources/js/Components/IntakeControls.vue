@@ -46,7 +46,7 @@ function toggleSoldOut(item) {
     send(route('team.menu-items.sold-out', item.id), { sold_out: !soldOut.value.has(item.id) });
 }
 
-const variantLabel = (v) => ({ whole: 'ganz', slice: 'Stück' })[v] ?? '';
+const variantLabel = (v) => ({ whole: 'ganz', slice: 'Stück', gratinated: 'gratiniert' })[v] ?? '';
 </script>
 
 <template>
