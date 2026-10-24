@@ -44,12 +44,12 @@ class FlammkuchenMenuMigrationTest extends TestCase
 
         $this->migrate();
 
-        $this->assertSame('Nonno Classico', $classic->fresh()->name);
-        $this->assertSame('Primo Amore', $apple->fresh()->name);
-        $this->assertNull($apple->fresh()->variant);
-        $this->assertFalse($appleSlice->fresh()->is_available);
-        $this->assertSame(225, $cola->fresh()->price_cents);
-        $this->assertSame(25, $cola->fresh()->deposit_cents);
+        $this->assertSame('Nonno Classico', $classic->refresh()->name);
+        $this->assertSame('Primo Amore', $apple->refresh()->name);
+        $this->assertNull($apple->refresh()->variant);
+        $this->assertFalse($appleSlice->refresh()->is_available);
+        $this->assertSame(225, $cola->refresh()->price_cents);
+        $this->assertSame(25, $cola->refresh()->deposit_cents);
 
         $card = MenuItem::query()->where('edition', 'flammkuchen')->where('is_available', true)->orderBy('sort')->get()
             ->map(fn (MenuItem $i) => [$i->name, $i->variant?->value, $i->price_cents])->all();
@@ -75,7 +75,7 @@ class FlammkuchenMenuMigrationTest extends TestCase
 
         $this->migrate();
 
-        $this->assertFalse($old->fresh()->is_available);
+        $this->assertFalse($old->refresh()->is_available);
         $this->assertSame(1, MenuItem::query()->where('name', 'Nonno Classico')->whereNull('variant')->count());
         $this->assertSame(650, MenuItem::query()->where('name', 'Nonno Classico')->whereNull('variant')->sole()->price_cents);
     }

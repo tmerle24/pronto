@@ -23,12 +23,12 @@ return new class extends Migration
         $items = DB::table('menu_items');
 
         foreach (self::RENAMES as [$old, $oldVariant, $new, $newVariant]) {
-            $row = $this->find($old, 'flammkuchen', $oldVariant);
-            if ($row === null) {
+            $id = $this->find($old, 'flammkuchen', $oldVariant);
+            if ($id === null) {
                 continue;
             }
             $exists = $this->find($new, 'flammkuchen', $newVariant) !== null;
-            $items->clone()->where('id', $row->id)->update($exists
+            $items->clone()->where('id', $id)->update($exists
                 ? ['is_available' => false, 'updated_at' => $now]
                 : ['name' => $new, 'name_en' => null, 'variant' => $newVariant, 'updated_at' => $now]);
         }
@@ -49,9 +49,9 @@ return new class extends Migration
                 'sort' => 50 + $sort * 10,
                 'updated_at' => $now,
             ];
-            $row = $this->find($name, 'flammkuchen', $variant);
-            if ($row !== null) {
-                $items->clone()->where('id', $row->id)->update($values);
+            $id = $this->find($name, 'flammkuchen', $variant);
+            if ($id !== null) {
+                $items->clone()->where('id', $id)->update($values);
             } else {
                 $items->clone()->insert($values + [
                     'name' => $name,
@@ -91,10 +91,12 @@ return new class extends Migration
         ];
     }
 
-    private function find(string $name, string $edition, ?string $variant): ?object
+    private function find(string $name, string $edition, ?string $variant): ?int
     {
-        return DB::table('menu_items')->where('name', $name)->where('edition', $edition)
+        $id = DB::table('menu_items')->where('name', $name)->where('edition', $edition)
             ->when($variant === null, fn ($q) => $q->whereNull('variant'), fn ($q) => $q->where('variant', $variant))
-            ->orderBy('id')->first();
+            ->orderBy('id')->value('id');
+
+        return $id === null ? null : (int) $id;
     }
 };

@@ -60,4 +60,10 @@ return [
         // hard cap per day, every SMS costs money
         'daily_limit' => (int) env('SMS_DAILY_LIMIT', 50),
     ],
+
+    // day settlement: estimated card fees per card payment (Stripe, terminal), real fees vary slightly
+    'staffing' => [
+        'card_fee_bp' => 150,
+        'card_fee_fixed_cents' => 25,
+    ],
 ];
