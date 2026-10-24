@@ -278,8 +278,8 @@ onMounted(() => {
                 <div v-for="(group, g) in groups" :key="group.title" class="mb-4">
                     <div class="mb-2 flex items-center justify-between gap-3">
                         <h2 class="label-caps text-grigio">{{ group.title }}</h2>
-                        <!-- icons only; negative margin keeps the heading row as low as before -->
-                        <div v-if="g === 0" class="-my-1 flex shrink-0 rounded-full bg-crema-scuro p-0.5" role="radiogroup" aria-label="Ansicht">
+                        <!-- icons only; no negative margin, the scrolling section would clip it at the top -->
+                        <div v-if="g === 0" class="flex shrink-0 rounded-full bg-crema-scuro p-0.5" role="radiogroup" aria-label="Ansicht">
                             <button
                                 v-for="option in [{ value: 'tiles', label: 'Kacheln' }, { value: 'list', label: 'Liste' }]"
                                 :key="option.value"
@@ -313,10 +313,13 @@ onMounted(() => {
                                 :disabled="soldOut.has(item.id)"
                                 @click="add(item)"
                             >
+                                <span class="flex size-8 shrink-0 items-center justify-center">
+                                    <MenuIcon :icon="item.icon" :variant="item.variant" class="h-8" />
+                                </span>
                                 <span
-                                    class="w-9 shrink-0 rounded-full text-center text-base leading-7 font-extrabold tabular-nums"
-                                    :class="quantities[item.id] ? 'bg-basilico text-white' : ''"
-                                >{{ quantities[item.id] ? `${quantities[item.id]}\u202f×` : '' }}</span>
+                                    v-if="quantities[item.id]"
+                                    class="shrink-0 rounded-full bg-basilico px-2 text-base leading-6 font-extrabold text-white tabular-nums"
+                                >{{ quantities[item.id] }}&#8239;×</span>
                                 <span class="min-w-0 flex-1 leading-tight">
                                     <span class="text-lg font-bold">{{ item.name }}</span>
                                     <span v-if="item.variant" class="ml-1.5 text-grigio">{{ VARIANT[item.variant] }}</span>
