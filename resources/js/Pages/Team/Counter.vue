@@ -278,18 +278,28 @@ onMounted(() => {
                 <div v-for="(group, g) in groups" :key="group.title" class="mb-4">
                     <div class="mb-2 flex items-center justify-between gap-3">
                         <h2 class="label-caps text-grigio">{{ group.title }}</h2>
-                        <div v-if="g === 0" class="flex shrink-0 rounded-full bg-crema-scuro p-1" role="radiogroup" aria-label="Ansicht">
+                        <!-- icons only; negative margin keeps the heading row as low as before -->
+                        <div v-if="g === 0" class="-my-1 flex shrink-0 rounded-full bg-crema-scuro p-0.5" role="radiogroup" aria-label="Ansicht">
                             <button
                                 v-for="option in [{ value: 'tiles', label: 'Kacheln' }, { value: 'list', label: 'Liste' }]"
                                 :key="option.value"
                                 type="button"
                                 role="radio"
                                 :aria-checked="view === option.value"
-                                class="h-10 rounded-full px-4 text-sm font-bold"
-                                :class="view === option.value ? 'bg-carbone text-crema' : 'text-carbone'"
+                                :aria-label="option.label"
+                                :title="option.label"
+                                class="grid size-9 place-items-center rounded-full"
+                                :class="view === option.value ? 'bg-carbone text-crema' : 'text-grigio'"
                                 @click="view = option.value"
                             >
-                                {{ option.label }}
+                                <svg v-if="option.value === 'tiles'" viewBox="0 0 20 20" class="size-5" fill="currentColor" aria-hidden="true">
+                                    <rect x="2" y="2" width="7" height="7" rx="1.5" /><rect x="11" y="2" width="7" height="7" rx="1.5" />
+                                    <rect x="2" y="11" width="7" height="7" rx="1.5" /><rect x="11" y="11" width="7" height="7" rx="1.5" />
+                                </svg>
+                                <svg v-else viewBox="0 0 20 20" class="size-5" fill="currentColor" aria-hidden="true">
+                                    <rect x="2" y="3" width="16" height="2.5" rx="1.25" /><rect x="2" y="8.75" width="16" height="2.5" rx="1.25" />
+                                    <rect x="2" y="14.5" width="16" height="2.5" rx="1.25" />
+                                </svg>
                             </button>
                         </div>
                     </div>
