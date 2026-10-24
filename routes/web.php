@@ -10,8 +10,10 @@ use App\Http\Controllers\Guest\OrderController;
 use App\Http\Controllers\Team\AndroidAppController;
 use App\Http\Controllers\Team\CounterController;
 use App\Http\Controllers\Team\IntakeController;
+use App\Http\Controllers\Team\InvitationController;
 use App\Http\Controllers\Team\LoginController;
 use App\Http\Controllers\Team\QueueController;
+use App\Http\Controllers\Team\ShiftsController;
 use App\Http\Controllers\Team\TapToPayController;
 use App\Http\Controllers\Webhooks\StripeWebhookController;
 use App\Http\Controllers\Webhooks\WhatsAppWebhookController;
@@ -39,6 +41,8 @@ Route::prefix('team')->name('team.')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('/login', [LoginController::class, 'show'])->name('login');
         Route::post('/login', [LoginController::class, 'store'])->middleware('throttle:6,1');
+        Route::get('/einladung/{token}', [InvitationController::class, 'show'])->name('invitation');
+        Route::post('/einladung/{token}', [InvitationController::class, 'store'])->middleware('throttle:6,1');
     });
 
     Route::middleware('auth')->group(function () {
@@ -57,6 +61,10 @@ Route::prefix('team')->name('team.')->group(function () {
         // counter app with Tap to Pay, outside Google Play
         Route::get('/app', [AndroidAppController::class, 'show'])->name('app');
         Route::get('/app/tiamo-pronto.apk', [AndroidAppController::class, 'download'])->middleware('throttle:30,60')->name('app.download');
+
+        Route::get('/einsaetze', [ShiftsController::class, 'show'])->name('shifts');
+        Route::put('/einsaetze/{marketDay:id}', [ShiftsController::class, 'update'])->name('shifts.availability');
+        Route::delete('/einsaetze/{marketDay:id}', [ShiftsController::class, 'destroy'])->name('shifts.availability.destroy');
 
         Route::get('/counter', [CounterController::class, 'show'])->name('counter');
         Route::post('/counter', [CounterController::class, 'store'])->name('counter.store');

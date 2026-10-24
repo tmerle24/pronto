@@ -89,7 +89,7 @@ class CounterAndIntakeTest extends TestCase
         $this->assertSame(500, $order->items()->sole()->unit_price_cents);
         $this->assertSame(
             [['menu_item_id' => $this->pizza->id, 'menu_cents' => 950, 'charged_cents' => 500]],
-            $order->events()->where('type', 'created')->sole()->meta['custom_prices'],
+            $order->events()->where('type', 'created')->sole()->meta['custom_prices'] ?? null,
         );
     }
 
@@ -99,7 +99,7 @@ class CounterAndIntakeTest extends TestCase
             ->post('/team/counter', ['lines' => [['id' => $this->pizza->id, 'quantity' => 1, 'price_cents' => null]], 'payment_method' => 'cash'])
             ->assertSessionHas('placed', fn (array $placed) => $placed['total_cents'] === 950);
 
-        $this->assertArrayNotHasKey('custom_prices', Order::query()->sole()->events()->where('type', 'created')->sole()->meta);
+        $this->assertArrayNotHasKey('custom_prices', Order::query()->sole()->events()->where('type', 'created')->sole()->meta ?? []);
     }
 
     public function test_individual_price_is_limited(): void

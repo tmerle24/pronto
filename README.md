@@ -13,6 +13,7 @@ Live: <https://pronto.tiamo-pizza.de>
 | Gästeseite (Karte, Bezahlen, Status) | Gast-Handy | `/`, `/e/{event}`, `/o/{token}` | öffentlich |
 | Cucina (Queue) | Tablet hinter der Theke | `/team/queue` | Team-Login |
 | Cassa (Theke) | Handy/Tablet | `/team/counter` | Team-Login |
+| Turni (Einsätze) | Handy | `/team/einsaetze` | Team-Login |
 | Cassa-App (Tap to Pay) | Android-Handy | App "TIAMO Pronto", Download unter `/team/app` | Team-Login |
 | Tabellone (Abhol-Display) | Tablet vorne, quer | `/display/{token}` | geheimer Link (Admin, Events, "Display") |
 | Admin | Laptop/Handy | `/team/admin` | Rolle Admin |
@@ -165,6 +166,25 @@ base64 -w0 tiamo-pronto.jks
 
 Lokal bauen (Android SDK nötig): `npx cap sync android && cd android && ./gradlew assembleDebug`. Ein Debug-Build läuft
 nur mit Testkeys, Stripe lehnt sie live ab.
+
+## Einsatzplanung und Abrechnung (Prototyp)
+
+Alle im Team sind selbstständig und teilen sich den Gewinn eines Markttags nach Stunden: Jede Stunde ist gleich viel wert.
+
+1. **Admin, Events, Event öffnen:** unter "Markttage" auf "Alle Tage anlegen" klicken (10–18 Uhr, Team 9–19 Uhr, änderbar).
+   Unter "Kosten" Standgebühr, Anmeldung usw. ohne Tag eintragen (wird auf alle Markttage verteilt), Einkauf oder Gas
+   mit Tag.
+2. **Einladen:** Admin, Team, "Einladen". Pronto zeigt einen persönlichen Link (7 Tage gültig) und öffnet auf Wunsch
+   WhatsApp. Die Person legt damit selbst E-Mail und Passwort fest.
+3. **Eintragen:** Jeder trägt unter "Turni" ein, von wann bis wann er an welchem Markttag kann.
+4. **Planen:** Admin, Einsatzplanung, Markttag "Planen". Unter "Wer kann?" mit "Einplanen" übernehmen, unter
+   "Einsätze" anpassen. Das Team sieht den Plan unter "Turni".
+5. **Abrechnen:** Nach dem Tag unter "Einsätze" die echten Zeiten eintragen, dann "Abrechnung". Gewinn = Umsatz der
+   bezahlten Bestellungen des Tages ohne Pfand und Umsatzsteuer, minus geschätzte Kartengebühren (1,5 % + 0,25 €),
+   minus Kosten. "Abrechnen" zeigt jedem seinen Betrag als abgerechnet. Bei Verlust bekommt niemand etwas.
+
+Code: `app/Services/Staffing/DaySettlement.php`, `app/Http/Controllers/Team/ShiftsController.php`,
+`app/Filament/Resources/MarketDays/`.
 
 ## Checkliste "Vor dem Markttag"
 

@@ -40,7 +40,8 @@ class AdminPanelProvider extends PanelProvider
             ->navigationItems([
                 NavigationItem::make('Queue')->url('/team/queue')->icon('heroicon-o-fire')->sort(100),
                 NavigationItem::make('Theke')->url('/team/counter')->icon('heroicon-o-banknotes')->sort(101),
-                NavigationItem::make('Anleitung (PDF)')->url('/team/anleitung.pdf', shouldOpenInNewTab: true)->icon('heroicon-o-book-open')->sort(102),
+                NavigationItem::make('Turni (Team-Ansicht)')->url('/team/einsaetze')->icon('heroicon-o-calendar')->sort(102),
+                NavigationItem::make('Anleitung (PDF)')->url('/team/anleitung.pdf', shouldOpenInNewTab: true)->icon('heroicon-o-book-open')->sort(103),
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')

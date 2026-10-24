@@ -76,6 +76,18 @@ class Event extends Model
         ];
     }
 
+    /** @return HasMany<MarketDay, $this> */
+    public function marketDays(): HasMany
+    {
+        return $this->hasMany(MarketDay::class)->orderBy('date');
+    }
+
+    /** @return HasMany<EventCost, $this> */
+    public function costs(): HasMany
+    {
+        return $this->hasMany(EventCost::class);
+    }
+
     /** @return HasMany<Order, $this> */
     public function orders(): HasMany
     {
