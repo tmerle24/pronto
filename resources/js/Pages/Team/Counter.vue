@@ -89,6 +89,7 @@ function submit(method) {
     form.handed_over = !toKitchen.value;
     form.post(route('team.counter.store'), {
         preserveScroll: true,
+        onHttpException: (response) => (response.status === 419 ? reloadKeepingCart() : undefined),
         onSuccess: () => {
             clear();
             kitchenChoice.value = null;
@@ -96,6 +97,34 @@ function submit(method) {
         },
     });
 }
+
+// session gone after a long pause (419): nothing was ordered yet. Keep the cart, reload for a
+// fresh session (the remember cookie logs in again), the team taps once more.
+const SAVED_CART = 'counter-cart';
+function reloadKeepingCart() {
+    try {
+        sessionStorage.setItem(SAVED_CART, JSON.stringify({ quantities, customPrices, kitchenChoice: kitchenChoice.value }));
+    } catch {
+        // private mode: reload anyway, the cart is gone
+    }
+    window.location.reload();
+    return false;
+}
+function restoreCart() {
+    let saved = null;
+    try {
+        saved = JSON.parse(sessionStorage.getItem(SAVED_CART) ?? 'null');
+        sessionStorage.removeItem(SAVED_CART);
+    } catch {
+        return;
+    }
+    if (!saved) return;
+    for (const [id, quantity] of Object.entries(saved.quantities ?? {})) if (byId[id]) quantities[id] = quantity;
+    for (const [id, cents] of Object.entries(saved.customPrices ?? {})) if (quantities[id]) customPrices[id] = cents;
+    kitchenChoice.value = saved.kitchenChoice ?? null;
+    form.setError('order', 'Anmeldung erneuert, die Bestellung ist noch da. Bitte nochmal tippen.');
+}
+restoreCart();
 
 // Tap to Pay: order first (amount from the server), then the native tap screen
 const nativeApp = isNativeApp();
@@ -130,6 +159,7 @@ async function startTap() {
         lines: payload(),
         handed_over: !toKitchen.value,
     });
+    if (status === 419 || status === 401) return reloadKeepingCart();
     if (status !== 200) {
         tap.value = null;
         form.setError('order', data.message ?? 'Fehler.');
