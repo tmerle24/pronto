@@ -11,5 +11,5 @@ export function t(key, replace = {}) {
 }
 
 export function variantLabel(variant) {
-    return { whole: t('ganz'), slice: t('Stück') }[variant] ?? '';
+    return { whole: t('ganz'), slice: t('Stück'), gratinated: t('gratiniert') }[variant] ?? '';
 }

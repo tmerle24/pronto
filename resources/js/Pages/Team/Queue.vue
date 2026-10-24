@@ -315,7 +315,7 @@ const live = computed(() => connected.value && !outbox.offline.value);
                                     <span class="shrink-0 font-extrabold tabular-nums">{{ item.quantity }}&#8239;×</span>
                                     <span class="font-semibold whitespace-nowrap">
                                         {{ item.name }}
-                                        <span v-if="item.variant" class="text-base font-normal text-grigio">{{ item.variant === 'slice' ? 'Stück' : 'ganz' }}</span>
+                                        <span v-if="item.variant" class="text-base font-normal text-grigio">{{ { whole: 'ganz', slice: 'Stück', gratinated: 'gratiniert' }[item.variant] }}</span>
                                     </span>
                                     <span v-if="item.oven && item.icon" class="flex shrink-0 items-center gap-px">
                                         <MenuIcon

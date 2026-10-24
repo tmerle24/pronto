@@ -79,6 +79,44 @@ class CounterAndIntakeTest extends TestCase
         $this->actingAs($this->staff)->post('/team/counter', $this->counterOrder('cash'))->assertSessionHasNoErrors();
     }
 
+    public function test_counter_takes_an_individual_price(): void
+    {
+        $this->actingAs($this->staff)
+            ->post('/team/counter', ['lines' => [['id' => $this->pizza->id, 'quantity' => 2, 'price_cents' => 500]], 'payment_method' => 'cash'])
+            ->assertSessionHas('placed', fn (array $placed) => $placed['total_cents'] === 1000);
+
+        $order = Order::query()->sole();
+        $this->assertSame(500, $order->items()->sole()->unit_price_cents);
+        $this->assertSame(
+            [['menu_item_id' => $this->pizza->id, 'menu_cents' => 950, 'charged_cents' => 500]],
+            $order->events()->where('type', 'created')->sole()->meta['custom_prices'],
+        );
+    }
+
+    public function test_counter_without_individual_price_uses_the_menu(): void
+    {
+        $this->actingAs($this->staff)
+            ->post('/team/counter', ['lines' => [['id' => $this->pizza->id, 'quantity' => 1, 'price_cents' => null]], 'payment_method' => 'cash'])
+            ->assertSessionHas('placed', fn (array $placed) => $placed['total_cents'] === 950);
+
+        $this->assertArrayNotHasKey('custom_prices', Order::query()->sole()->events()->where('type', 'created')->sole()->meta);
+    }
+
+    public function test_individual_price_is_limited(): void
+    {
+        $this->actingAs($this->staff)
+            ->post('/team/counter', ['lines' => [['id' => $this->pizza->id, 'quantity' => 1, 'price_cents' => 100001]], 'payment_method' => 'cash'])
+            ->assertSessionHasErrors('lines.0.price_cents');
+        $this->assertSame(0, Order::query()->count());
+    }
+
+    public function test_guests_cannot_set_a_price(): void
+    {
+        $this->post("/e/{$this->event->slug}/orders", ['lines' => [['id' => $this->pizza->id, 'quantity' => 1, 'price_cents' => 1]], 'payment_method' => 'cash']);
+
+        $this->assertSame(950, Order::query()->sole()->total_cents);
+    }
+
     public function test_counter_rejects_online_payment(): void
     {
         $this->actingAs($this->staff)->post('/team/counter', $this->counterOrder('online'))->assertSessionHasErrors('payment_method');

@@ -19,6 +19,7 @@ class MenuSeeder extends Seeder
         $flamm = MenuEdition::Flammkuchen;
         $whole = ItemVariant::Whole;
         $slice = ItemVariant::Slice;
+        $gratinated = ItemVariant::Gratinated;
 
         // name, name_en, description, description_en, category, edition, variant, price, deposit, vat, allergens, additives, oven units
         $items = [
@@ -26,16 +27,19 @@ class MenuSeeder extends Seeder
             ['Margherita', null, 'Tomate, Mozzarella, Basilikum, Olivenöl', 'Tomato, mozzarella, basil, olive oil', MenuCategory::Pizza, $pizza, $slice, 300, 0, 700, 'A, G', null, '0.25'],
             ['Salami', null, 'Tomate, Mozzarella, italienische Salami', 'Tomato, mozzarella, Italian salami', MenuCategory::Pizza, $pizza, $whole, 950, 0, 700, 'A, G', '2, 3', '1.00'],
             ['Salami', null, 'Tomate, Mozzarella, italienische Salami', 'Tomato, mozzarella, Italian salami', MenuCategory::Pizza, $pizza, $slice, 350, 0, 700, 'A, G', '2, 3', '0.25'],
-            ['Flammkuchen Klassiker', 'Flammkuchen classic', 'Crème fraîche, Speck, Lauch, Zwiebeln', 'Crème fraîche, bacon, leek, onions', MenuCategory::Flammkuchen, $flamm, null, 650, 0, 700, 'A, G', '2, 3', '1.00'],
-            ['Flammkuchen Vegetarisch', 'Flammkuchen vegetarian', 'Crème fraîche, Lauch, gratinierter Bergkäse', 'Crème fraîche, leek, gratinated mountain cheese', MenuCategory::Flammkuchen, $flamm, null, 650, 0, 700, 'A, G', null, '1.00'],
-            ['Flammkuchen Apfel-Zimt', 'Flammkuchen apple cinnamon', 'Dessert: Crème fraîche, Apfel, Zimt, Zucker', 'Dessert: crème fraîche, apple, cinnamon, sugar', MenuCategory::Flammkuchen, $flamm, $whole, 600, 0, 700, 'A, G', null, '1.00'],
-            ['Flammkuchen Apfel-Zimt', 'Flammkuchen apple cinnamon', 'Dessert: Crème fraîche, Apfel, Zimt, Zucker', 'Dessert: crème fraîche, apple, cinnamon, sugar', MenuCategory::Flammkuchen, $flamm, $slice, 350, 0, 700, 'A, G', null, '0.25'],
-            ['Cola', null, 'Dose 0,33 l', 'Can 0.33 l', MenuCategory::Drink, null, null, 300, 25, 1900, null, '1, 9', '0.00'],
-            ['Wasser', 'Water', 'Flasche 0,33 l', 'Bottle 0.33 l', MenuCategory::Drink, null, null, 250, 25, 1900, null, null, '0.00'],
+            ['Nonno Classico', null, 'Crème fraîche, Speck, Zwiebeln, Schnittlauch', 'Crème fraîche, bacon, onions, chives', MenuCategory::Flammkuchen, $flamm, null, 650, 0, 700, 'a, b', '3', '1.00'],
+            ['Nonno Classico', null, 'Crème fraîche, Speck, Zwiebeln, Schnittlauch, gratiniert', 'Crème fraîche, bacon, onions, chives, gratinated', MenuCategory::Flammkuchen, $flamm, $gratinated, 750, 0, 700, 'a, b', '3', '1.00'],
+            ['Viva Vegetaria', null, 'Crème fraîche, Feta, Zwiebeln, Oliven, milde Chilis', 'Crème fraîche, feta, onions, olives, mild chillies', MenuCategory::Flammkuchen, $flamm, null, 650, 0, 700, 'a, b', null, '1.00'],
+            ['Viva Vegetaria', null, 'Crème fraîche, Feta, Zwiebeln, Oliven, milde Chilis, gratiniert', 'Crème fraîche, feta, onions, olives, mild chillies, gratinated', MenuCategory::Flammkuchen, $flamm, $gratinated, 750, 0, 700, 'a, b', null, '1.00'],
+            ['Primo Amore', null, 'Apfel & Zimt: Crème fraîche mit Rohrzucker & Zimt, Apfel, Mandelsplitter', 'Apple & cinnamon: crème fraîche with cane sugar & cinnamon, apple, flaked almonds', MenuCategory::Flammkuchen, $flamm, null, 600, 0, 700, 'a, b, c', null, '1.00'],
+            ['Bella Banana', null, 'Nutella & Banane: Nutella, Banane, Crème fraîche mit Ahornsirup', 'Nutella & banana: Nutella, banana, crème fraîche with maple syrup', MenuCategory::Flammkuchen, $flamm, null, 600, 0, 700, 'a, b, c, d', null, '1.00'],
+            ['Cola', null, 'Dose 0,33 l', 'Can 0.33 l', MenuCategory::Drink, null, null, 225, 25, 1900, null, '1, 2', '0.00'],
+            ['Wasser', 'Water', 'Flasche 0,33 l', 'Bottle 0.33 l', MenuCategory::Drink, null, null, 175, 25, 1900, null, null, '0.00'],
         ];
 
-        $icons = ['Margherita' => 'margherita', 'Salami' => 'salami', 'Flammkuchen Klassiker' => 'flammkuchen-klassiker',
-            'Flammkuchen Vegetarisch' => 'flammkuchen-vegetarisch', 'Flammkuchen Apfel-Zimt' => 'flammkuchen-dessert', 'Cola' => 'cola', 'Wasser' => 'wasser'];
+        $icons = ['Margherita' => 'margherita', 'Salami' => 'salami', 'Nonno Classico' => 'flammkuchen-klassiker',
+            'Viva Vegetaria' => 'flammkuchen-vegetarisch', 'Primo Amore' => 'flammkuchen-dessert', 'Bella Banana' => 'flammkuchen-banane',
+            'Cola' => 'cola', 'Wasser' => 'wasser'];
 
         foreach ($items as $sort => [$name, $nameEn, $desc, $descEn, $category, $edition, $variant, $price, $deposit, $vat, $allergens, $additives, $units]) {
             MenuItem::query()->firstOrCreate(

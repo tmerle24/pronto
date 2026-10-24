@@ -79,9 +79,10 @@ class MenuItem extends Model
     public const ICONS = [
         'margherita' => 'Pizza Margherita',
         'salami' => 'Pizza Salami',
-        'flammkuchen-klassiker' => 'Flammkuchen Klassiker',
-        'flammkuchen-vegetarisch' => 'Flammkuchen Vegetarisch',
-        'flammkuchen-dessert' => 'Flammkuchen Apfel-Zimt',
+        'flammkuchen-klassiker' => 'Flammkuchen Klassiker (Nonno Classico)',
+        'flammkuchen-vegetarisch' => 'Flammkuchen Vegetarisch (Viva Vegetaria)',
+        'flammkuchen-dessert' => 'Flammkuchen Apfel-Zimt (Primo Amore)',
+        'flammkuchen-banane' => 'Flammkuchen Nutella-Banane (Bella Banana)',
         'cola' => 'Cola (Dose)',
         'wasser' => 'Wasser (Flasche)',
     ];
