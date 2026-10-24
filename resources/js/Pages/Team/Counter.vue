@@ -216,6 +216,25 @@ function byProduct(items) {
     return [...rows.values()];
 }
 
+// tiles (with pictures) or a compact list, less scrolling on a phone; remembered per user on this device,
+// so a phone can show the list while the tablet keeps the tiles
+const viewKey = `counter-view.${usePage().props.auth?.user?.id ?? 0}`;
+const view = ref(readView());
+function readView() {
+    try {
+        return localStorage.getItem(viewKey) === 'list' ? 'list' : 'tiles';
+    } catch {
+        return 'tiles';
+    }
+}
+watch(view, (value) => {
+    try {
+        localStorage.setItem(viewKey, value);
+    } catch {
+        // private mode: only for this visit
+    }
+});
+
 const groups = computed(() => [
     { title: 'Essen', rows: byProduct(props.items.filter((i) => i.category !== 'drink')) },
     { title: 'Getränke', rows: [props.items.filter((i) => i.category === 'drink')] },
@@ -256,9 +275,60 @@ onMounted(() => {
         <main v-else class="grid min-h-0 flex-1 gap-3 px-3 pb-3 md:grid-cols-[1fr_320px]">
             <!-- phone: room below for the fixed pay panel, measured (fallback 30rem) -->
             <section class="min-h-0 overflow-y-auto pb-(--pay-room) md:pb-0" :style="{ '--pay-room': payHeight ? `${payHeight + 12}px` : '30rem' }">
-                <div v-for="group in groups" :key="group.title" class="mb-4">
-                    <h2 class="label-caps mb-2 text-grigio">{{ group.title }}</h2>
-                    <div v-for="(row, r) in group.rows" :key="r" class="mb-2 grid grid-cols-1 gap-2 md:mb-3 md:grid-cols-3 md:gap-3">
+                <div v-for="(group, g) in groups" :key="group.title" class="mb-4">
+                    <div class="mb-2 flex items-center justify-between gap-3">
+                        <h2 class="label-caps text-grigio">{{ group.title }}</h2>
+                        <!-- icons only; negative margin keeps the heading row as low as before -->
+                        <div v-if="g === 0" class="-my-1 flex shrink-0 rounded-full bg-crema-scuro p-0.5" role="radiogroup" aria-label="Ansicht">
+                            <button
+                                v-for="option in [{ value: 'tiles', label: 'Kacheln' }, { value: 'list', label: 'Liste' }]"
+                                :key="option.value"
+                                type="button"
+                                role="radio"
+                                :aria-checked="view === option.value"
+                                :aria-label="option.label"
+                                :title="option.label"
+                                class="grid size-9 place-items-center rounded-full"
+                                :class="view === option.value ? 'bg-carbone text-crema' : 'text-grigio'"
+                                @click="view = option.value"
+                            >
+                                <svg v-if="option.value === 'tiles'" viewBox="0 0 20 20" class="size-5" fill="currentColor" aria-hidden="true">
+                                    <rect x="2" y="2" width="7" height="7" rx="1.5" /><rect x="11" y="2" width="7" height="7" rx="1.5" />
+                                    <rect x="2" y="11" width="7" height="7" rx="1.5" /><rect x="11" y="11" width="7" height="7" rx="1.5" />
+                                </svg>
+                                <svg v-else viewBox="0 0 20 20" class="size-5" fill="currentColor" aria-hidden="true">
+                                    <rect x="2" y="3" width="16" height="2.5" rx="1.25" /><rect x="2" y="8.75" width="16" height="2.5" rx="1.25" />
+                                    <rect x="2" y="14.5" width="16" height="2.5" rx="1.25" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- list: one line per item, about a third of a tile's height -->
+                    <ul v-if="view === 'list'" class="divide-y divide-crema-scuro overflow-hidden rounded-card bg-raised md:grid md:grid-cols-2 md:divide-y-0">
+                        <li v-for="item in group.rows.flat()" :key="item.id">
+                            <button
+                                type="button"
+                                class="flex min-h-12 w-full items-center gap-2 px-3 py-1.5 text-left"
+                                :class="[soldOut.has(item.id) ? 'bg-crema-scuro text-grigio' : '', quantities[item.id] ? 'bg-basilico/10' : '']"
+                                :disabled="soldOut.has(item.id)"
+                                @click="add(item)"
+                            >
+                                <span
+                                    class="w-9 shrink-0 rounded-full text-center text-base leading-7 font-extrabold tabular-nums"
+                                    :class="quantities[item.id] ? 'bg-basilico text-white' : ''"
+                                >{{ quantities[item.id] ? `${quantities[item.id]}\u202f×` : '' }}</span>
+                                <span class="min-w-0 flex-1 leading-tight">
+                                    <span class="text-lg font-bold">{{ item.name }}</span>
+                                    <span v-if="item.variant" class="ml-1.5 text-grigio">{{ VARIANT[item.variant] }}</span>
+                                </span>
+                                <span v-if="soldOut.has(item.id)" class="shrink-0 text-sm font-semibold">Ausverkauft</span>
+                                <span v-else class="shrink-0 text-right font-semibold tabular-nums" :class="{ 'text-rosso': item.id in customPrices }">
+                                    {{ euro(unitPrice(item) + item.deposit_cents) }}
+                                </span>
+                            </button>
+                        </li>
+                    </ul>
+                    <div v-for="(row, r) in view === 'tiles' ? group.rows : []" :key="r" class="mb-2 grid grid-cols-1 gap-2 md:mb-3 md:grid-cols-3 md:gap-3">
                         <button
                             v-for="item in row"
                             :key="item.id"
