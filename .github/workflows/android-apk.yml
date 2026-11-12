@@ -2,6 +2,8 @@ name: Android APK (Cassa-App)
 
 # Manual only. The web app deploys via deploy.sh; a new APK is only needed for
 # native changes (Capacitor/plugin updates, icon, permissions, capacitor.config.ts).
+# Every build is also a GitHub release, direct download on a phone:
+#   https://github.com/tmerle24/pronto/releases/latest/download/tiamo-pronto.apk
 # Put it online afterwards (README, "App für die Cassa"):
 #   php artisan android:publish-apk tiamo-pronto.apk --app-version=<version_name>
 on:
@@ -25,6 +27,8 @@ jobs:
     name: Build signed APK
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: write
 
     env:
       VERSION_NAME: ${{ inputs.version_name }}
@@ -89,3 +93,11 @@ jobs:
           name: tiamo-pronto-${{ env.VERSION_NAME }}-${{ env.VERSION_CODE }}
           retention-days: 30
           path: android/app/build/outputs/apk/release/tiamo-pronto.apk
+
+      - name: GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v$VERSION_NAME-$VERSION_CODE" android/app/build/outputs/apk/release/tiamo-pronto.apk \
+            --target "$GITHUB_SHA" --title "TIAMO Pronto $VERSION_NAME ($VERSION_CODE)" \
+            --notes "versionName $VERSION_NAME, versionCode $VERSION_CODE, commit $GITHUB_SHA"
